@@ -1,0 +1,21 @@
+$primary-color: #2F327D;
+$sencond-color: #F48C06;
+$third-color: #5B72EE;
+$four-color: #29B9E7;
+$desc-color: #464646;
+$head-color: #626266;
+$desc-one-color: #696984;
+$background-primary: #fff3e3;
+
+
+@mixin flex-center {
+    display: flex;
+    // justify-content: center;
+    align-items: center;
+}
+
+@mixin cover-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}

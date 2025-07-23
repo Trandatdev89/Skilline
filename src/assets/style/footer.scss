@@ -1,0 +1,55 @@
+@use './variables' as *;
+
+.footer {
+    background-color: $primary-color;
+    padding-top: 50px;
+    padding-bottom: 20px;
+    text-align: center;
+
+    &__wrap {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    &__logo {
+        margin-bottom: 50px;
+
+        img {
+            max-width: 80px;
+            height: auto;
+        }
+    }
+
+    &__desc {
+        margin-bottom: 15px;
+        color: $desc-one-color;
+        font-weight: 500;
+        font-size: 18px;
+    }
+
+    &__form {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+
+        input {
+            flex: 1;
+            padding: 10px 15px;
+            border-radius: 15px;
+            outline: none;
+            border: none;
+            background-color: transparent;
+            border: 1px solid $desc-one-color;
+            line-height: 1.6;
+        }
+
+    }
+
+    &__copy {
+        margin: 20px;
+
+        span {
+            margin: 10px;
+        }
+    }
+}

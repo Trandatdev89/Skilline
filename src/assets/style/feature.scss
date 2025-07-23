@@ -1,0 +1,38 @@
+.feature {
+    margin-top: 50px;
+
+    &__main {
+        display: flex;
+        justify-content: space-between;
+        margin: 50px 0;
+
+        &:nth-child(even) {
+            & .feature__img {
+                order: 2;
+            }
+        }
+
+        &:nth-child(odd) {
+            & .feature__content {
+                order: 2;
+            }
+        }
+
+    }
+
+
+    &__content {
+        width: calc(100%/2 - 25px);
+    }
+
+    &__img {
+        width: calc(100%/2 - 25px);
+        ;
+
+        img {
+            width: 100%;
+            height: auto;
+            object-fit: cover;
+        }
+    }
+}

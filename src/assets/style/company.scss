@@ -1,0 +1,23 @@
+@use './variables' as *;
+
+
+.company {
+    margin-bottom: 50px;
+
+    &__combine {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+    }
+
+
+    &__title {
+        color: $desc-one-color;
+        font-size: 20px;
+        margin-bottom: 40px;
+        text-align: center;
+    }
+
+
+}
