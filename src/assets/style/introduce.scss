@@ -64,7 +64,7 @@
 
     &__wrap {
         @include flex-center;
-        justify-content: space-between;
+        // justify-content: space-between;
         gap: 25px;
     }
 
@@ -73,5 +73,48 @@
         box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
         text-align: center;
         position: relative;
+    }
+
+    @media(max-width: 1199px) {
+        &__title {
+            font-size: 20px;
+
+        }
+
+        &__desc {
+            font-size: 14px;
+        }
+    }
+
+
+    @media (max-width: 991px) {
+        &__wrap {
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        &__box {
+            max-width: calc(100%/2 - 10px);
+            // max-width: calc(50% - 12.5px);
+            margin-bottom: 20px;
+        }
+
+    }
+
+    @media (max-width: 767px) {
+        &__title {
+            font-size: 18px;
+
+        }
+
+        &__desc {
+            font-size: 12px;
+        }
+
+        &__box {
+            max-width: 100%;
+
+        }
+
     }
 }

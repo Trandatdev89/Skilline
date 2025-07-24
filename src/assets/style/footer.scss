@@ -3,7 +3,7 @@
 .footer {
     background-color: $primary-color;
     padding-top: 50px;
-    padding-bottom: 20px;
+    padding-bottom: 5px;
     text-align: center;
 
     &__wrap {
@@ -50,6 +50,45 @@
 
         span {
             margin: 10px;
+        }
+    }
+
+    @media (max-width: 991px) {
+        &__desc {
+            font-size: 18px;
+        }
+
+        &__form {
+
+            input {
+                padding: 5px 10px;
+            }
+
+        }
+
+        &__copy {
+            font-size: 14px;
+        }
+    }
+
+
+    @media (max-width: 767px) {
+        &__title {
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        &__desc,
+        a {
+
+            font-size: 12px;
+
+        }
+
+        &__btn {
+            font-size: 8px;
+
         }
     }
 }

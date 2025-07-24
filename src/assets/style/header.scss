@@ -5,6 +5,7 @@
     display: flex;
     // justify-content: center;
     align-items: center;
+
 }
 
 @mixin cover-img {
@@ -20,8 +21,11 @@
 
     &__top {
         @include flex-center;
-        padding: 20px 0;
+        padding: 15px 0;
         gap: 20px;
+        justify-content: space-between;
+        position: relative;
+
     }
 
     &__logo {
@@ -106,5 +110,105 @@
         img {
             @include cover-img;
         }
+    }
+
+    &__bar {
+        display: none;
+        cursor: pointer;
+    }
+
+
+    @media (max-width: 991px) {
+        &__list {
+            white-space: nowrap;
+            font-size: 14px;
+            gap: 25px;
+        }
+
+        &__title {
+            font-size: 25px;
+        }
+
+        &__desc {
+            font-size: 14px;
+        }
+
+        &__watch {
+            margin-top: 12px;
+        }
+
+        &__play {
+            padding: 10px;
+            font-weight: 500;
+            font-size: 12px;
+        }
+
+        &__subdesc {
+            font-size: 12px;
+            color: $desc-color;
+        }
+
+    }
+
+    @media (max-width: 767px) {
+        &__bar {
+            display: block;
+            font-size: 25px;
+        }
+
+        &__list,
+        &__auth {
+            display: none;
+        }
+
+        &__banner {
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        &__girl {
+            order: 2;
+        }
+
+        &__watch {
+            justify-content: center;
+            margin-top: 50px;
+        }
+
+        &__content {
+            text-align: center;
+        }
+    }
+}
+
+
+.dropdown {
+    position: absolute;
+    width: 100%;
+    background-color: #fff;
+    overflow: hidden;
+    max-height: 0;
+    opacity: 0;
+    visibility: hidden;
+    padding: 0 20px;
+    transition: all 0.3s ease;
+    top: 100%;
+
+    &__item {
+        padding: 10px;
+        font-size: 14px;
+
+        a {
+            text-decoration: none;
+            color: $head-color;
+        }
+    }
+
+
+    &.show {
+        max-height: 500px;
+        opacity: 1;
+        visibility: visible;
+        padding: 10px 20px;
     }
 }

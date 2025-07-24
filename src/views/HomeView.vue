@@ -19,6 +19,15 @@
             Sign Up
           </a>
         </div>
+        <div class="header__bar">
+          <i class="fa-solid fa-bars" @click="handleShowBar"></i>
+        </div>
+        <div :class="['dropdown', { show: isShow }]">
+          <ul class="dropdown__item"><a href="/">Home</a></ul>
+          <ul class="dropdown__item"><a href="/">Careers</a></ul>
+          <ul class="dropdown__item"><a href="/">Blog</a></ul>
+          <ul class="dropdown__item"><a href="/">About Us</a></ul>
+        </div>
       </div>
       <div class="header__banner">
         <div class="header__content">
@@ -375,7 +384,7 @@
           <span>Privacy Policy</span>
           <span>Terms & Conditions</span>
         </div>
-        <p class="ooter__desc">© 2021 Class Technologies Inc. </p>
+        <p class="footer__desc">© 2021 Class Technologies Inc. </p>
       </div>
     </div>
   </footer>
@@ -400,7 +409,12 @@ import quizz from "../assets/img/img6.png";
 import book from "../assets/img/img7.png";
 import blog from "../assets/img/Group 40.png";
 import one from "../assets/img/img8.png";
+import { ref } from "vue";
 
+const isShow = ref<boolean>(false);
 
+const handleShowBar = () => {
+  isShow.value = !isShow.value;
+}
 
 </script>
