@@ -85,7 +85,7 @@
     &__bitton {
         position: absolute;
         bottom: 0;
-        right: 2%;
+        right: 10px;
         z-index: 99;
     }
 
@@ -141,6 +141,10 @@
             font-size: 12px;
             font-weight: bold;
             margin-bottom: 5px;
+        }
+
+        span {
+            font-size: 8px;
         }
 
         &__desc,
