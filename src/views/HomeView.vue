@@ -1,60 +1,4 @@
 <template>
-  <header class="header">
-    <div class="container">
-      <div class="header__top">
-        <div class="header__logo">
-          <img :srcset="logo" alt="logo">
-        </div>
-        <div class="header__list">
-          <div class="header__item">Home</div>
-          <div class="header__item">Careers</div>
-          <div class="header__item">Blog</div>
-          <div class="header__item">About Us</div>
-        </div>
-        <div class="header__auth">
-          <a href="/" class="btn btn--primary">
-            Login
-          </a>
-          <a href="/" class=" btn btn--second">
-            Sign Up
-          </a>
-        </div>
-        <div class="header__bar">
-          <i class="fa-solid fa-bars" @click="handleShowBar"></i>
-        </div>
-        <div :class="['dropdown', { show: isShow }]">
-          <ul class="dropdown__item"><a href="/">Home</a></ul>
-          <ul class="dropdown__item"><a href="/">Careers</a></ul>
-          <ul class="dropdown__item"><a href="/">Blog</a></ul>
-          <ul class="dropdown__item"><a href="/">About Us</a></ul>
-        </div>
-      </div>
-      <div class="header__banner">
-        <div class="header__content">
-          <div class="header__title">
-            <span>Studying</span> Online is now much easier
-          </div>
-          <div class="header__desc">
-            Skilline is an interesting platform that will teach you in more an interactive way
-          </div>
-          <div class="header__watch">
-            <a href="/" class="btn btn--second">
-              Join for free
-            </a>
-            <div class="header__play">
-              Play
-            </div>
-            <div class="header__subdesc">
-              Watch how it works
-            </div>
-          </div>
-        </div>
-        <div class="header__girl">
-          <img :srcset="girl" alt="gril">
-        </div>
-      </div>
-    </div>
-  </header>
 
   <section class="company">
     <div class="container">
@@ -364,36 +308,11 @@
     </div>
   </section>
 
-  <footer class="footer">
-    <div class="container">
-      <div class="footer__wrap">
-        <div class="footer__logo">
-          <img :srcset="logo" alt="logo">
-        </div>
-        <div class="footer__desc">
-          Subscribe to get our Newsletter
-        </div>
-        <div class="footer__form">
-          <input type="text">
-          <a href="/" class="btn btn--second">
-            Subscribe
-          </a>
-        </div>
-        <div class="footer__copy">
-          <span>Careers</span>
-          <span>Privacy Policy</span>
-          <span>Terms & Conditions</span>
-        </div>
-        <p class="footer__desc">© 2021 Class Technologies Inc. </p>
-      </div>
-    </div>
-  </footer>
+
 
 </template>
 
 <script setup lang="ts">
-import logo from "../assets/img/logo.png";
-import girl from "../assets/img/header-pic.png"
 import facebook from "../assets/img/facebook.svg"
 import google from "../assets/img/google.svg"
 import netflix from "../assets/img/netflix.svg"
@@ -409,12 +328,6 @@ import quizz from "../assets/img/img6.png";
 import book from "../assets/img/img7.png";
 import blog from "../assets/img/Group 40.png";
 import one from "../assets/img/img8.png";
-import { ref } from "vue";
 
-const isShow = ref<boolean>(false);
-
-const handleShowBar = () => {
-  isShow.value = !isShow.value;
-}
 
 </script>
