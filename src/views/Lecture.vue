@@ -17,7 +17,6 @@
                   v-for="lesson in lessons"
                   :key="lesson.id"
                   class="lesson-item"
-                  :class="{ 'premium': lesson.isPremium }"
               >
                 <div class="lesson-main">
                   <el-icon class="play-icon">
@@ -26,13 +25,13 @@
                   <span class="lesson-title">{{ lesson.title }}</span>
                 </div>
                 <div class="lesson-actions">
-                  <el-link
-                      v-if="!lesson.isPremium"
+                  <span
                       type="primary"
                       class="try-link"
+                      @click="handleShowLecture(lesson.id)"
                   >
                     Học thử
-                  </el-link>
+                  </span>
                   <span class="lesson-duration">{{ lesson.duration }}</span>
                 </div>
               </div>
@@ -85,10 +84,14 @@
               <span class="currency">VND</span>
               <span class="original-price">2,750,000 VND</span>
             </div>
-
-            <el-button type="primary" size="large" class="register-btn">
-              Đăng Ký Học
-            </el-button>
+            <div style="display: flex;align-items: center;justify-content: space-between">
+              <el-button type="primary" size="large" class="register-btn" @click="handleAdd">
+                Thêm giỏ hàng
+              </el-button>
+              <el-button type="primary" size="large" class="register-btn">
+                Đăng Ký Học
+              </el-button>
+            </div>
           </div>
 
           <!-- Course Stats -->
@@ -161,10 +164,14 @@
       </div>
     </div>
   </div>
+  <LectureVideoDialog
+      ref="lectureVideoDialog"
+      title="Video Player" :video-id="videoId"
+  />
 </template>
 
 <script setup>
-  import { ref } from 'vue'
+  import { onMounted, ref } from 'vue'
   import {
     VideoPlay,
     Document,
@@ -173,87 +180,44 @@
     Trophy,
     Share
   } from '@element-plus/icons-vue'
+  import { useRoute } from 'vue-router'
+  import LectureApi from '@/api/LectureApi.js'
+  import LectureVideoDialog from '@/components/dialog/LectureVideoDialog.vue'
+  import AlertService from '@/service/AlertService.js'
 
-  const lessons = ref([
-    {
-      id: 1,
-      title: 'Bài 1. Hướng dẫn cài đặt phần mềm DEV C++ để lập trình',
-      duration: '03:01',
-      isPremium: false
-    },
-    {
-      id: 2,
-      title: 'Bài 2. Hướng dẫn sử dụng Dev C và lập trình chương trình đầu tiên',
-      duration: '12:14',
-      isPremium: false
-    },
-    {
-      id: 3,
-      title: 'Bài 3. Kiểu dữ liệu và Biến',
-      duration: '28:34',
-      isPremium: false
-    },
-    {
-      id: 4,
-      title: 'Bài 4. Chú thích trong ngôn ngữ lập trình C',
-      duration: '07:27',
-      isPremium: false
-    },
-    {
-      id: 5,
-      title: 'Bài 5. Nhập xuất dữ liệu với hàm printf và hàm scanf',
-      duration: '26:25',
-      isPremium: false
-    },
-    {
-      id: 6,
-      title: 'Bài 6. Toán tử gán và toán tử toán học',
-      duration: '25:01',
-      isPremium: true
-    },
-    {
-      id: 7,
-      title: 'Bài 7. Toán tử so sánh và toán tử logic',
-      duration: '18:07',
-      isPremium: true
-    },
-    {
-      id: 8,
-      title: 'Bài 8. Toán tử tăng giảm và toán tử 3 ngôi',
-      duration: '11:53',
-      isPremium: true
-    },
-    {
-      id: 9,
-      title: 'Bài 9. Các hàm toán học phổ biến trong thư viện math.h',
-      duration: '18:27',
-      isPremium: true
-    },
-    {
-      id: 10,
-      title: 'Bài 10. Hướng dẫn làm bài và nộp bài trên trang Hackerrank',
-      duration: '24:19',
-      isPremium: false
-    },
-    {
-      id: 11,
-      title: 'Bài 11. Hướng dẫn giải Contest 1 từ bài 1 tới bài 5',
-      duration: '19:36',
-      isPremium: true
-    },
-    {
-      id: 12,
-      title: 'Bài 12. Cấu trúc rẽ nhánh If...else',
-      duration: '24:43',
-      isPremium: true
-    },
-    {
-      id: 13,
-      title: 'Bài 13. Hướng dẫn giải Contest 1 từ bài 6 tới bài 10',
-      duration: '26:50',
-      isPremium: true
+  const lessons = ref()
+  const videoId = ref()
+  const lectureVideoDialog = ref()
+
+  const route = useRoute()
+  const courseId = route.query.courseId
+
+  const getListLesson = async () => {
+    let res = await LectureApi.getLecturesByCourseId(courseId)
+    lessons.value = res.data
+  }
+
+  const handleShowLecture = (id) => {
+    videoId.value = id
+    lectureVideoDialog.value.show()
+  }
+
+
+  const handleAdd = (course) => {
+    const cart = JSON.parse(localStorage.getItem("cart")) || [];
+    const exists = cart.find((item) => item.id === course.id);
+    if (!exists) {
+      cart.push(course);
+      localStorage.setItem("cart", JSON.stringify(cart));
+      AlertService.success("Thành công","Thêm sản phẩm vào giỏ thành công")
+    } else {
+      AlertService.success("Thất bại","Sản phẩm đã thêm vào giỏ rồi")
     }
-  ])
+  };
+
+  onMounted(() => {
+    getListLesson()
+  })
 </script>
 
 <style lang="scss" scoped>

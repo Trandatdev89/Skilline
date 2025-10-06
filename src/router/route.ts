@@ -16,13 +16,18 @@ import Lecture from '@/views/Lecture.vue'
 import Order from '@/views/Order.vue'
 import Cart from '@/views/Cart.vue'
 import Register from '@/views/login/Register.vue'
+import Test from '@/views/Test.vue'
+import Dashboard from '@/views/admin/Dashboard.vue'
+import Test2 from '@/views/Test2.vue'
+import ManageCourse from '@/views/admin/ManageCourse.vue'
+import Success from '@/views/Success.vue'
+import Logout from '@/views/Logout.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
-      name: 'layout-default',
-      path: '/',
+      ...Pages.layoutDefault,
       component: LayoutDefault,
       children: [
         {
@@ -36,6 +41,18 @@ const router = createRouter({
         {
           ...Pages.fobiden,
           component: Fobiden,
+        },
+        {
+          ...Pages.success,
+          component: Success,
+        },
+        {
+          ...Pages.logout,
+          component: Logout,
+          meta: {
+            requireAuth: true,
+            roles:["ADMIN","USER"]
+          }
         },
         {
           ...Pages.login,
@@ -76,13 +93,31 @@ const router = createRouter({
       ]
     },
     {
-      ...Pages.dashboard,
+      ...Pages.layoutAdmin,
       component: LayoutAdmin,
       meta: {
         requireAuth: true,
         roles:["ADMIN"]
-      }
-    }
+      },
+      children:[
+        {
+          ...Pages.dashboard,
+          component: Dashboard
+        },
+        {
+          ...Pages.manageCourses,
+          component: ManageCourse
+        }
+      ]
+    },
+    {
+      ...Pages.test,
+      component: Test
+    },
+    {
+      ...Pages.test2,
+      component: Test2
+    },
   ]
 });
 
@@ -107,7 +142,6 @@ router.beforeEach((to, from, next) => {
         return next(pages.fobiden.path)
       }
     } catch (error) {
-      console.error('Invalid token:', error)
       return next(Pages.login.path)
     }
 

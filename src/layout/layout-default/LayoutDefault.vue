@@ -10,8 +10,8 @@
 
 <script setup lang="ts">
 
-  import Header from "@/layout/layout-admin/Header.vue";
-  import Footer from "@/layout/layout-admin/Footer.vue";
+  import Header from "@/layout/layout-default/Header.vue";
+  import Footer from "@/layout/layout-default/Footer.vue";
 </script>
 
 <style lang="scss" scoped>

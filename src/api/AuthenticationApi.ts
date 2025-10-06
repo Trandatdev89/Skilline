@@ -22,6 +22,10 @@ class AuthenticationApi{
     return response;
   }
 
+  async logout(): Promise<ApiResponse<any>>{
+    return await httpApi.get("/auth/logout");
+  }
+
 }
 
 export default new AuthenticationApi();

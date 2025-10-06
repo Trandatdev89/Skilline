@@ -12,7 +12,7 @@
       <div class="section-header">
         <h2 class="section-title">
           Thông tin khóa học
-          <span class="course-count">(1 Khóa học)</span>
+          <span class="course-count">({{ listItemInCart.length }} Khóa học)</span>
         </h2>
       </div>
 
@@ -25,7 +25,7 @@
         </div>
 
         <!-- Course Item -->
-        <div class="course-item">
+        <div class="course-item" v-for="(item,index) in listItemInCart" :key="index">
           <div class="course-info">
             <div class="course-image">
               <img
@@ -36,13 +36,13 @@
             </div>
             <div class="course-details">
               <h3 class="course-title">
-                Học Lập Trình C qua 170 bài giảng, 350 bài tập thực hành và 200 câu trắc nghiệm (Update 2025)
+                {{ item?.title }}
               </h3>
             </div>
           </div>
 
           <div class="course-price">
-            <span class="price-amount">1,099,000</span>
+            <span class="price-amount">{{ item?.price }}</span>
             <span class="currency">VND</span>
           </div>
 
@@ -52,7 +52,7 @@
                 :icon="Delete"
                 circle
                 size="small"
-                @click="removeCourse"
+                @click="handleRemoveItem(index,item?.id)"
             />
           </div>
         </div>
@@ -62,14 +62,14 @@
       <div class="summary-section">
         <div class="summary-row">
           <span class="summary-label">Tổng tiền</span>
-          <span class="summary-value">1,099,000 VND</span>
+          <span class="summary-value">{{ totalAmount }} VND</span>
         </div>
 
         <el-button
             type="primary"
             size="large"
             class="checkout-btn"
-            @click="confirmOrder"
+            @click="handlePayment"
         >
           Xác nhận giỏ hàng
         </el-button>
@@ -79,62 +79,44 @@
 </template>
 
 <script setup lang="ts">
-  import { ref } from 'vue'
   import { Delete } from '@element-plus/icons-vue'
-  import { ElMessage, ElMessageBox } from 'element-plus'
+  import { computed, onMounted, ref, watch } from 'vue'
+  import CourseApi from '@/api/CourseApi.ts'
+  import useOrderStore from '@/stores/order.ts'
+  import { useRouter } from 'vue-router'
 
-  // Reactive data
-  const courseCount = ref(1)
-  const totalAmount = ref(1099000)
 
-  // Methods
-  const removeCourse = () => {
-    ElMessageBox.confirm(
-        'Bạn có chắc chắn muốn xóa khóa học này khỏi giỏ hàng?',
-        'Xác nhận xóa',
-        {
-          confirmButtonText: 'Xóa',
-          cancelButtonText: 'Hủy',
-          type: 'warning',
-        }
-    )
-        .then(() => {
-          // Remove course logic here
-          courseCount.value = 0
-          totalAmount.value = 0
-          ElMessage({
-            type: 'success',
-            message: 'Đã xóa khóa học khỏi giỏ hàng',
-          })
-        })
-        .catch(() => {
-          ElMessage({
-            type: 'info',
-            message: 'Đã hủy thao tác',
-          })
-        })
+  const orderStore = useOrderStore();
+  const route = useRouter();
+  const cartStorage = ref<any[]>(JSON.parse(localStorage.getItem('cart') || '[]'))
+  const listItemInCart = ref<any[]>([])
+
+  const getListCourseById = async () => {
+    if (cartStorage.value.length === 0) return
+    const res = await CourseApi.getListCourseById(cartStorage.value)
+    listItemInCart.value = res.data || []
   }
 
-  const confirmOrder = () => {
-    if (courseCount.value === 0) {
-      ElMessage({
-        type: 'warning',
-        message: 'Giỏ hàng trống, vui lòng thêm khóa học',
-      })
-      return
-    }
+  const totalAmount = computed(() => {
+    return listItemInCart.value?.reduce((sum, item) => sum + (item.price || 0), 0) ?? 0
+  })
 
-    // Navigate to checkout or payment page
-    ElMessage({
-      type: 'success',
-      message: 'Chuyển đến trang thanh toán...',
-    })
+  const handleRemoveItem = (index: number, id: number) => {
+    listItemInCart.value.splice(index, 1)
+    cartStorage.value = cartStorage.value.filter(itemId => Number(itemId) !== Number(id))
+    localStorage.setItem('cart', JSON.stringify(cartStorage.value))
   }
 
-  // Format currency
-  const formatCurrency = (amount: number): string => {
-    return amount.toLocaleString('vi-VN')
+  const handlePayment = () => {
+    orderStore.getListOrderNeedPayment(listItemInCart.value,totalAmount.value);
+    route.push("/order");
   }
+
+
+  onMounted(async () => {
+    await getListCourseById()
+  })
+
 </script>
 
 <style lang="scss" scoped>

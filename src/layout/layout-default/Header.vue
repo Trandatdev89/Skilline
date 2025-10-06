@@ -19,7 +19,12 @@
             <RouterLink to="/category">Category</RouterLink>
           </div>
         </div>
-        <div class="header__auth">
+        <div class="header__auth header__auth--dropdown" v-if="userInfo.isAuthentication">
+          <DropDownCustom :title="userInfo.name"
+                          :list-link="listLink"
+                          avatar="https://static.vecteezy.com/system/resources/previews/002/002/403/non_2x/man-with-beard-avatar-character-isolated-icon-free-vector.jpg" />
+        </div>
+        <div class="header__auth" v-else>
           <RouterLink to="/login" class="btn btn--primary">
             Login
           </RouterLink>
@@ -31,10 +36,10 @@
           <i class="fa-solid fa-bars" @click="handleShowBar"></i>
         </div>
         <div :class="['dropdown', { show: isShow }]">
-          <ul class="dropdown__item"><a href="/">Home</a></ul>
-          <ul class="dropdown__item"><a href="/">Careers</a></ul>
-          <ul class="dropdown__item"><a href="/">Blog</a></ul>
-          <ul class="dropdown__item"><a href="/">About Us</a></ul>
+          <ul class="dropdown__item"><a href="/public">Home</a></ul>
+          <ul class="dropdown__item"><a href="/public">Careers</a></ul>
+          <ul class="dropdown__item"><a href="/public">Blog</a></ul>
+          <ul class="dropdown__item"><a href="/public">About Us</a></ul>
         </div>
       </div>
       <div class="header__banner" v-if="router.path==='/'">
@@ -46,7 +51,7 @@
             Skilline is an interesting platform that will teach you in more an interactive way
           </div>
           <div class="header__watch">
-            <a href="/" class="btn btn--second">
+            <a href="/public" class="btn btn--second">
               Join for free
             </a>
             <div class="header__play">
@@ -71,6 +76,9 @@
   import girl from '@/assets/img/header-pic.png'
   import { ref } from 'vue'
   import { RouterLink, useRoute } from 'vue-router'
+  import useAuthentication from '@/stores/Authentication.ts'
+  import DropDownCustom from '@/components/dropdown/DropDownCustom.vue'
+  import { storeToRefs } from 'pinia'
 
   const isShow = ref<boolean>(false)
   const router = useRoute()
@@ -79,8 +87,29 @@
     isShow.value = !isShow.value
   }
 
+  const listLink = ref<any>([
+    {
+      label: 'Khóa học đã mua',
+      url: '/course'
+    },
+    {
+      label: 'Thông tin cá nhân',
+      url: '/info'
+    },
+    {
+      label: 'Đăng xuất',
+      url: '/logout'
+    }
+  ])
+
+  const { userInfo } = storeToRefs(useAuthentication())
+
 </script>
 
 <style lang="scss" scoped>
-
+  a{
+    text-decoration: none;
+    font-size: 18px;
+    font-weight: 500;
+  }
 </style>

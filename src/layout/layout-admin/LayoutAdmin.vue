@@ -1,39 +1,26 @@
 <template>
-  <div class="layout-admin">
-    <button @click="handleClick">
-      Click me!
-    </button>
-
-    <ConfirmDialog
-        ref="confirmDialog"
-        @close-dialog="handleClose"
-        title="Xoa bai viet"
-        message="Neu xoa bai viet thi se khong the khoi phuc lai duoc?"
-        type-confirm="delete"
-        @on-submit="handleDelete"/>
+  <div class="layoutAdmin">
+    <el-container>
+      <el-aside>
+        <LeftMenu/>
+      </el-aside>
+      <el-container>
+        <el-header>
+          <HeaderAdmin/>
+        </el-header>
+        <el-main>
+          <router-view/>
+        </el-main>
+      </el-container>
+    </el-container>
   </div>
 </template>
 
 <script setup lang="ts">
 
-  import ConfirmDialog from '@/components/dialog/ConfirmDialog.vue'
-  import { ref } from 'vue'
 
-  const confirmDialog = ref();
-
-  const handleClick = ()=>{
-    confirmDialog.value?.show();
-  }
-
-  const handleDelete = ()=>{
-    // call api:
-    console.log("Delete success!")
-    confirmDialog.value?.hide();
-  }
-
-  const handleClose = ()=>{
-    confirmDialog.value?.hide();
-  }
+import LeftMenu from '@/layout/layout-admin/LeftMenu.vue'
+import HeaderAdmin from '@/layout/layout-admin/HeaderAdmin.vue'
 </script>
 
 <style scoped>

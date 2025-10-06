@@ -47,11 +47,8 @@
   import useAuthentication from '@/stores/Authentication.ts'
   import AlertService from '@/service/AlertService.ts'
   import { useRouter } from 'vue-router'
-  import Pages from '@/router/pages.ts'
-  import Login from '@/views/login/Login.vue'
-  import Authentication from '@/stores/Authentication.ts'
-  import AuthenticationSecurity from '@/security/AuthenticationSecurity.ts'
   import pages from '@/router/pages.ts'
+  import AuthenticationSecurity from '@/security/AuthenticationSecurity.ts'
   import { TokenType } from '@/enums/TokenType.ts'
 
   const ruleFormRef = ref<FormInstance>()
@@ -64,7 +61,7 @@
     ]
   })
   const loading = ref<boolean>(false)
-  const isAuthentication = useAuthentication()
+  const authentication = useAuthentication()
   const router = useRouter()
   const dataForm = reactive({
     username: '',
@@ -86,8 +83,7 @@
 
             localStorage.setItem('accessToken', res.data.accessToken)
             localStorage.setItem('refreshToken', res.data.refreshToken)
-
-            isAuthentication.isAuthentication(res.data)
+            authentication.isAuthentication(res.data)
             redirectAfterLogin()
             AlertService.success('Login Success!', res.message)
           } else {

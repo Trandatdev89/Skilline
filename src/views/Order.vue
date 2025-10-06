@@ -51,16 +51,16 @@
             <h2 class="section-title">Danh sách khóa học</h2>
 
             <!-- Course Item -->
-            <div class="course-item">
+            <div class="course-item" v-for="item in listOrder.order">
               <div class="course-image">
                 <img :src="courseImage" alt="Course" />
               </div>
               <div class="course-details">
                 <h3 class="course-title">
-                  Học Lập Trình C qua 170 bài giảng, 350 bài tập thực hành và 200 câu trắc nghiệm (Update 2025)
+                  {{ item.title }}
                 </h3>
                 <div class="course-price">
-                  <span class="current-price">1,099,000 VND</span>
+                  <span class="current-price">{{ item.price }} VND</span>
                 </div>
               </div>
             </div>
@@ -82,14 +82,10 @@
 
             <!-- Price Summary -->
             <div class="price-summary">
-              <div class="price-row">
-                <span class="price-label">Đơn giá</span>
-                <span class="price-value">1,099,000 <span class="currency">VND</span></span>
-              </div>
               <div class="price-divider"></div>
               <div class="price-row total">
                 <span class="price-label">Tổng tiền</span>
-                <span class="price-value total-price">1,099,000 <span class="currency">VND</span></span>
+                <span class="price-value total-price">{{ listOrder.total }} <span class="currency">VND</span></span>
               </div>
             </div>
 
@@ -121,15 +117,34 @@
 </template>
 
 <script setup>
-  import { ref, reactive } from 'vue'
+  import { ref, reactive, watchEffect } from 'vue'
   import { ElMessage } from 'element-plus'
   import { ArrowLeft, Ticket } from '@element-plus/icons-vue'
+  import useOrderStore from '@/stores/order.js'
+  import { storeToRefs } from 'pinia'
+  import useAuthentication from '@/stores/Authentication.js'
+  import OrderApi from '@/api/OrderApi.js'
+  import AlertService from '@/service/AlertService.js'
+  import PaymentApi from '@/api/PaymentApi.js'
 
   // Form data
   const studentForm = reactive({
     fullName: '',
     phone: '',
     email: ''
+  })
+
+  const orderStore = useOrderStore()
+  const authenticationStore = useAuthentication()
+
+  const { listOrder } = storeToRefs(orderStore)
+  const { userInfo } = storeToRefs(authenticationStore)
+
+  const orderReq = reactive({
+    userId: userInfo.userId,
+    totalPrice: listOrder.total,
+    status: 'PAID',
+    courseId: listOrder.order?.map(item => item.id)
   })
 
   // Form validation rules
@@ -154,33 +169,29 @@
   const paymentLoading = ref(false)
   const TicketIcon = Ticket
 
-  // Course image - placeholder base64 image
   const courseImage = ref('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjgwIiB2aWV3Qm94PSIwIDAgMTAwIDgwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjNjY3ZWVhIi8+CjxyZWN0IHg9IjEwIiB5PSIxMCIgd2lkdGg9IjgwIiBoZWlnaHQ9IjYwIiBmaWxsPSIjNzY0YmEyIi8+Cjx0ZXh0IHg9IjUwIiB5PSI0NSIgZmlsbD0id2hpdGUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+QzwvdGV4dD4KPC9zdmc+')
 
-  // Methods
-  const handleLogin = () => {
-    ElMessage.info('Chuyển đến trang đăng nhập')
-  }
-
   const handlePayment = async () => {
+    console.log(userInfo.id,orderReq.totalPrice);
     try {
-      const valid = await studentFormRef.value.validate()
-      if (valid) {
-        paymentLoading.value = true
-        // Simulate payment process
-        setTimeout(() => {
-          paymentLoading.value = false
-          ElMessage.success('Đặt hàng thành công!')
-        }, 2000)
+      paymentLoading.value = true
+      const responseOrder = await OrderApi.saveOrder(orderReq)
+      if (responseOrder.data === 200) {
+        const responsePaymentOnline = await PaymentApi.vnPayment(
+            `payment?orderId=${responseOrder?.data?.id}&amount=${orderReq.totalPrice}&orderInfo=Nguời dùng có id ${orderReq.userId} chuyển khoản`)
+        window.location.href = responsePaymentOnline?.url
+      } else {
+        AlertService.error('Thất bai!', 'Đơn hàng chưa được đặt')
       }
     } catch (error) {
       ElMessage.error('Vui lòng kiểm tra lại thông tin')
     }
+    paymentLoading.value = false
   }
 
-  const goBack = () => {
-    ElMessage.info('Quay lại giỏ hàng')
-  }
+  watchEffect(()=>{
+    console.log(userInfo.id,listOrder);
+  })
 </script>
 
 <style lang="scss" scoped>

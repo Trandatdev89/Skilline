@@ -10,7 +10,7 @@
         </div>
         <div class="footer__form">
           <input type="text">
-          <a href="/" class="btn btn--second">
+          <a href="/public" class="btn btn--second">
             Subscribe
           </a>
         </div>

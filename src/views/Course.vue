@@ -6,18 +6,22 @@
         <el-breadcrumb-item>Khóa học online</el-breadcrumb-item>
       </el-breadcrumb>
 
-      <!-- Course Grid -->
       <div class="course-grid">
-        <!-- C Programming Course -->
-        <div class="course-card">
+        <div class="course-card"
+             @click="handleToLecture(course.id)"
+             v-for="course in listCourse"
+             :key="course.id">
           <div class="card-header c-programming">
-            <div class="discount-badge">-60%</div>
+            <div class="discount-badge">-
+              <span>{{ course.discountPrice }}</span>
+              %
+            </div>
             <div class="hot-badge">NỔI BẬT</div>
 
             <div class="course-info">
               <div class="course-title">
                 <h3>KHÓA HỌC</h3>
-                <h2>LẬP TRÌNH C</h2>
+                <h2>{{ course.title }}</h2>
               </div>
 
               <ul class="course-features">
@@ -71,138 +75,6 @@
             </div>
           </div>
         </div>
-
-        <!-- Python Course -->
-        <div class="course-card">
-          <div class="card-header python-course">
-            <div class="discount-badge">60%</div>
-            <div class="hot-badge">NỔI BẬT</div>
-
-            <div class="course-info">
-              <div class="course-title">
-                <h2>KHÓA HỌC LẬP TRÌNH</h2>
-                <h1>PYTHON</h1>
-              </div>
-
-              <ul class="course-features">
-                <li>• 120 BÀI HỌC</li>
-                <li>• 300 BÀI TẬP CODING</li>
-                <li>• WEBSITE CHẤM BÀI TỰ ĐỘNG</li>
-                <li>• NHÓM HỖ TRỢ GIẢI ĐÁP</li>
-              </ul>
-
-              <el-button type="primary" class="register-btn">REGISTER NOW</el-button>
-            </div>
-
-            <div class="course-illustration python-illustration">
-              <div class="python-logos">
-                <div class="python-logo"></div>
-                <div class="ai-chip">AI</div>
-              </div>
-              <div class="character-python">
-                <div class="laptop"></div>
-                <div class="person"></div>
-                <div class="desk"></div>
-                <div class="accessories"></div>
-              </div>
-            </div>
-          </div>
-
-          <div class="card-content">
-            <h4>Lập Trình Python Từ Cơ Bản Tới Nâng Cao Qua 120 Video Và 300 Bài Tập Thực Hành (Update 2024)</h4>
-
-            <div class="course-stats">
-              <div class="stat">
-                <el-icon>
-                  <Document />
-                </el-icon>
-                <span>120 bài giảng</span>
-              </div>
-              <div class="stat">
-                <el-icon>
-                  <Clock />
-                </el-icon>
-                <span>56 giờ</span>
-              </div>
-              <div class="stat">
-                <el-icon>
-                  <User />
-                </el-icon>
-                <span>1622 học viên</span>
-              </div>
-            </div>
-
-            <div class="price-section">
-              <span class="current-price">1,099,000 VND</span>
-              <span class="original-price">2,750,000 VND</span>
-            </div>
-          </div>
-        </div>
-        <div class="course-card">
-          <div class="card-header python-course">
-            <div class="discount-badge">60%</div>
-            <div class="hot-badge">NỔI BẬT</div>
-
-            <div class="course-info">
-              <div class="course-title">
-                <h2>KHÓA HỌC LẬP TRÌNH</h2>
-                <h1>PYTHON</h1>
-              </div>
-
-              <ul class="course-features">
-                <li>• 120 BÀI HỌC</li>
-                <li>• 300 BÀI TẬP CODING</li>
-                <li>• WEBSITE CHẤM BÀI TỰ ĐỘNG</li>
-                <li>• NHÓM HỖ TRỢ GIẢI ĐÁP</li>
-              </ul>
-
-              <el-button type="primary" class="register-btn">REGISTER NOW</el-button>
-            </div>
-
-            <div class="course-illustration python-illustration">
-              <div class="python-logos">
-                <div class="python-logo"></div>
-                <div class="ai-chip">AI</div>
-              </div>
-              <div class="character-python">
-                <div class="laptop"></div>
-                <div class="person"></div>
-                <div class="desk"></div>
-                <div class="accessories"></div>
-              </div>
-            </div>
-          </div>
-
-          <div class="card-content">
-            <h4>Lập Trình Python Từ Cơ Bản Tới Nâng Cao Qua 120 Video Và 300 Bài Tập Thực Hành (Update 2024)</h4>
-
-            <div class="course-stats">
-              <div class="stat">
-                <el-icon>
-                  <Document />
-                </el-icon>
-                <span>120 bài giảng</span>
-              </div>
-              <div class="stat">
-                <el-icon>
-                  <Clock />
-                </el-icon>
-                <span>56 giờ</span>
-              </div>
-              <div class="stat">
-                <el-icon>
-                  <User />
-                </el-icon>
-                <span>1622 học viên</span>
-              </div>
-            </div>
-
-            <div class="price-section">
-              <span class="current-price">1,099,000 VND</span>
-              <span class="original-price">2,750,000 VND</span>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   </div>
@@ -210,6 +82,34 @@
 
 <script setup>
   import { Document, Clock, User } from '@element-plus/icons-vue'
+  import { useRoute, useRouter } from 'vue-router'
+  import CourseApi from '@/api/CourseApi.js'
+  import { onMounted, ref } from 'vue'
+
+  const route = useRoute()
+  const router = useRouter()
+
+  const categoryId = route.query.categoryId || null
+  console.log(categoryId)
+  const listCourse = ref([])
+
+  const getListCourse = async () => {
+    let res
+    if (categoryId) {
+      res = await CourseApi.getListCourseByCategoryId(categoryId)
+    } else {
+      res = await CourseApi.getListCourses()
+    }
+    listCourse.value = res.data
+  }
+
+  const handleToLecture = (courseId) => {
+    router.push(`/lecture?courseId=${courseId}`);
+  }
+
+  onMounted(() => {
+    getListCourse()
+  })
 </script>
 
 <style lang="scss" scoped>
