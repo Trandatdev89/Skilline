@@ -22,6 +22,7 @@ import Test2 from '@/views/Test2.vue'
 import ManageCourse from '@/views/admin/ManageCourse.vue'
 import Success from '@/views/Success.vue'
 import Logout from '@/views/Logout.vue'
+import Category from '@/views/Category.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -45,6 +46,10 @@ const router = createRouter({
         {
           ...Pages.success,
           component: Success,
+        },
+        {
+          ...Pages.category,
+          component: Category,
         },
         {
           ...Pages.logout,

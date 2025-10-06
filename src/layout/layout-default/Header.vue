@@ -19,10 +19,18 @@
             <RouterLink to="/category">Category</RouterLink>
           </div>
         </div>
-        <div class="header__auth header__auth--dropdown" v-if="userInfo.isAuthentication">
+        <div class="header__auth header__auth--dropdown" v-if="userInfo.isAuthentication"
+             style="display: flex;align-items: center;">
           <DropDownCustom :title="userInfo.name"
                           :list-link="listLink"
                           avatar="https://static.vecteezy.com/system/resources/previews/002/002/403/non_2x/man-with-beard-avatar-character-isolated-icon-free-vector.jpg" />
+          <RouterLink to="/cart">
+            <el-badge :value="listCourse.length" class="item">
+              <el-icon style="font-size: 24px;color: #000000">
+                <ShoppingCart />
+              </el-icon>
+            </el-badge>
+          </RouterLink>
         </div>
         <div class="header__auth" v-else>
           <RouterLink to="/login" class="btn btn--primary">
@@ -72,6 +80,7 @@
 
 <script lang="ts" setup>
 
+  import { ShoppingCart } from '@element-plus/icons-vue'
   import logo from '@/assets/img/logo.png'
   import girl from '@/assets/img/header-pic.png'
   import { ref } from 'vue'
@@ -79,9 +88,11 @@
   import useAuthentication from '@/stores/Authentication.ts'
   import DropDownCustom from '@/components/dropdown/DropDownCustom.vue'
   import { storeToRefs } from 'pinia'
+  import useCartStore from '@/stores/cart.ts'
 
   const isShow = ref<boolean>(false)
   const router = useRoute()
+  const {listCourse} = storeToRefs(useCartStore());
 
   const handleShowBar = () => {
     isShow.value = !isShow.value
@@ -107,7 +118,7 @@
 </script>
 
 <style lang="scss" scoped>
-  a{
+  a {
     text-decoration: none;
     font-size: 18px;
     font-weight: 500;

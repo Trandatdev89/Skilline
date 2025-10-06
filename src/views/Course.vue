@@ -7,91 +7,31 @@
       </el-breadcrumb>
 
       <div class="course-grid">
-        <div class="course-card"
-             @click="handleToLecture(course.id)"
-             v-for="course in listCourse"
-             :key="course.id">
-          <div class="card-header c-programming">
-            <div class="discount-badge">-
-              <span>{{ course.discountPrice }}</span>
-              %
-            </div>
-            <div class="hot-badge">NỔI BẬT</div>
-
-            <div class="course-info">
-              <div class="course-title">
-                <h3>KHÓA HỌC</h3>
-                <h2>{{ course.title }}</h2>
-              </div>
-
-              <ul class="course-features">
-                <li>• 172 BÀI HỌC</li>
-                <li>• 350 BÀI TẬP CODING</li>
-                <li>• 200 BÀI TẬP TRẮC NGHIỆM</li>
-                <li>• WEBSITE CHẤM BÀI TỰ ĐỘNG</li>
-                <li>• NHÓM HỖ TRỢ GIẢI ĐÁP</li>
-              </ul>
-            </div>
-
-            <div class="course-illustration">
-              <div class="logo-h">H</div>
-              <div class="character-c">
-                <div class="laptop"></div>
-                <div class="person"></div>
-                <div class="chair"></div>
-                <div class="plant"></div>
-              </div>
-              <div class="refresh-icon">↻</div>
-            </div>
-          </div>
-
-          <div class="card-content">
-            <h4>Học Lập Trình C qua 170 bài giảng, 350 bài tập thực hành và 200 câu trắc nghiệm (Update 2025)</h4>
-
-            <div class="course-stats">
-              <div class="stat">
-                <el-icon>
-                  <Document />
-                </el-icon>
-                <span>170 bài giảng</span>
-              </div>
-              <div class="stat">
-                <el-icon>
-                  <Clock />
-                </el-icon>
-                <span>150 giờ</span>
-              </div>
-              <div class="stat">
-                <el-icon>
-                  <User />
-                </el-icon>
-                <span>2118 học viên</span>
-              </div>
-            </div>
-
-            <div class="price-section">
-              <span class="current-price">1,099,000 VND</span>
-              <span class="original-price">2,750,000 VND</span>
-            </div>
-          </div>
-        </div>
+        <template
+                  v-for="course in listCourse"
+                  :key="course.id">
+          <CardUi
+              @click="handleToLecture(course.id)"
+              :img="course?.thumbnail_url"
+              :title="course.title"
+              :content-course="course"/>
+        </template>
       </div>
     </div>
   </div>
 </template>
 
-<script setup>
-  import { Document, Clock, User } from '@element-plus/icons-vue'
+<script setup lang="ts">
   import { useRoute, useRouter } from 'vue-router'
   import CourseApi from '@/api/CourseApi.js'
   import { onMounted, ref } from 'vue'
+  import CardUi from '@/components/card/CardUi.vue'
 
   const route = useRoute()
   const router = useRouter()
 
-  const categoryId = route.query.categoryId || null
-  console.log(categoryId)
-  const listCourse = ref([])
+  const categoryId :any = route.query.categoryId || null
+  const listCourse = ref<any>([])
 
   const getListCourse = async () => {
     let res
@@ -103,8 +43,8 @@
     listCourse.value = res.data
   }
 
-  const handleToLecture = (courseId) => {
-    router.push(`/lecture?courseId=${courseId}`);
+  const handleToLecture = (courseId:number) => {
+    router.push(`/lecture?courseId=${courseId}`)
   }
 
   onMounted(() => {

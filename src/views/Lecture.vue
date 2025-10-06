@@ -184,13 +184,15 @@
   import LectureApi from '@/api/LectureApi.js'
   import LectureVideoDialog from '@/components/dialog/LectureVideoDialog.vue'
   import AlertService from '@/service/AlertService.js'
+  import useCartStore from '@/stores/cart.js'
 
   const lessons = ref()
   const videoId = ref()
   const lectureVideoDialog = ref()
 
   const route = useRoute()
-  const courseId = route.query.courseId
+  const courseId = route.query.courseId;
+  const {handleAddToCart} = useCartStore();
 
   const getListLesson = async () => {
     let res = await LectureApi.getLecturesByCourseId(courseId)
@@ -203,12 +205,10 @@
   }
 
 
-  const handleAdd = (course) => {
-    const cart = JSON.parse(localStorage.getItem("cart")) || [];
-    const exists = cart.find((item) => item.id === course.id);
-    if (!exists) {
-      cart.push(course);
-      localStorage.setItem("cart", JSON.stringify(cart));
+  const handleAdd = () => {
+
+    const isAdd = handleAddToCart(course);
+    if (isAdd) {
       AlertService.success("Thành công","Thêm sản phẩm vào giỏ thành công")
     } else {
       AlertService.success("Thất bại","Sản phẩm đã thêm vào giỏ rồi")

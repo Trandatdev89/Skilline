@@ -15,6 +15,7 @@ const Pages = {
     order : {name:'order',path:'/order'},
     cart : {name:'cart',path:'/cart'},
     success : {name:'success',path:'/success'},
+    category : {name:'category',path:'/category'},
     test : {name:'test',path:'/test'},
     test2 : {name:'test2',path:'/test2'},
 

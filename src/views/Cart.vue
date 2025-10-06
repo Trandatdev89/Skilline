@@ -12,7 +12,7 @@
       <div class="section-header">
         <h2 class="section-title">
           Thông tin khóa học
-          <span class="course-count">({{ listItemInCart.length }} Khóa học)</span>
+          <span class="course-count">({{ listCourse.length }} Khóa học)</span>
         </h2>
       </div>
 
@@ -25,7 +25,7 @@
         </div>
 
         <!-- Course Item -->
-        <div class="course-item" v-for="(item,index) in listItemInCart" :key="index">
+        <div class="course-item" v-for="(item,index) in listCourse" :key="index">
           <div class="course-info">
             <div class="course-image">
               <img
@@ -84,38 +84,26 @@
   import CourseApi from '@/api/CourseApi.ts'
   import useOrderStore from '@/stores/order.ts'
   import { useRouter } from 'vue-router'
+  import { storeToRefs } from 'pinia'
+  import useCartStore from '@/stores/cart.ts'
 
 
-  const orderStore = useOrderStore();
-  const route = useRouter();
-  const cartStorage = ref<any[]>(JSON.parse(localStorage.getItem('cart') || '[]'))
-  const listItemInCart = ref<any[]>([])
-
-  const getListCourseById = async () => {
-    if (cartStorage.value.length === 0) return
-    const res = await CourseApi.getListCourseById(cartStorage.value)
-    listItemInCart.value = res.data || []
-  }
-
+  const orderStore = useOrderStore()
+  const route = useRouter()
+  const { listCourse } = storeToRefs(useCartStore())
+  const { handleSubCart, handleDeletes } = useCartStore()
   const totalAmount = computed(() => {
-    return listItemInCart.value?.reduce((sum, item) => sum + (item.price || 0), 0) ?? 0
+    return listCourse.value?.reduce((sum: any, item: any) => sum + (item.price || 0), 0) ?? 0
   })
 
   const handleRemoveItem = (index: number, id: number) => {
-    listItemInCart.value.splice(index, 1)
-    cartStorage.value = cartStorage.value.filter(itemId => Number(itemId) !== Number(id))
-    localStorage.setItem('cart', JSON.stringify(cartStorage.value))
+    handleSubCart([id])
   }
 
   const handlePayment = () => {
-    orderStore.getListOrderNeedPayment(listItemInCart.value,totalAmount.value);
-    route.push("/order");
+    orderStore.getListOrderNeedPayment(listCourse.value, totalAmount.value)
+    route.push('/order')
   }
-
-
-  onMounted(async () => {
-    await getListCourseById()
-  })
 
 </script>
 

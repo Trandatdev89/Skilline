@@ -7,7 +7,7 @@ class CourseApi {
   }
 
   async getListCourses(): Promise<ApiResponse<any>> {
-    return await httpApi.get(`/api/course`);
+    return await httpApi.get(`/api/course/all`);
   }
 
   async getListCourseById(ids:string[]): Promise<ApiResponse<any>> {
