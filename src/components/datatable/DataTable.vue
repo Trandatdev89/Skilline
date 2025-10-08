@@ -52,6 +52,7 @@
 
   const getData = async () => {
     loading.value = true
+    page.value = 1
     const request = {
       page: page.value,
       size: size.value,
@@ -59,8 +60,7 @@
       keyword: 'id'
     }
     const res = await props?.getDataFunction(request)
-    console.log(res);
-    if (res) {
+    if (res.code === 200) {
       data.value = res.data.list
       updatePageRequest(res.data)
     } else {
@@ -104,7 +104,7 @@
     await getData()
   })
 
-  // defineExpose({ getData })
+  defineExpose({ getData })
 
 </script>
 
