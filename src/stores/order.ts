@@ -15,6 +15,8 @@ const useOrderStore = defineStore("order-store",()=>{
 
   return {listOrder,getListOrderNeedPayment};
 
+},{
+  persist:true
 });
 
 export default useOrderStore;

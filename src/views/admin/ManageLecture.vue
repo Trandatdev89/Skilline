@@ -1,6 +1,22 @@
 <template>
   <div class="order">
-    <div class="order__add">
+    <div class="order__add" style="display: flex;align-items: center;justify-content: space-between">
+      <el-select
+          v-model="courseIdSelected"
+          filterable
+          allow-create
+          default-first-option
+          :reserve-keyword="false"
+          placeholder="Choose tags for your article"
+          style="width: 240px"
+      >
+        <el-option
+            v-for="item in listCourse"
+            :key="item.id"
+            :label="item.name"
+            :value="item.id"
+        />
+      </el-select>
       <el-button @click="handleShowCreateCourse">
         Add Multiple Course
       </el-button>
@@ -8,27 +24,25 @@
     <div class="order__table">
       <DataTable
           ref="dataTable"
-          :get-data-function="getListCourse"
+          :get-data-function="getListLectureByCourseId"
       >
         <el-table-column prop="id" label="ID" />
-        <el-table-column prop="title" label="Tieu de" />
-        <el-table-column prop="level" label="Cap do" />
-        <el-table-column prop="status" label="Trạng thái">
+        <el-table-column prop="quantity" label="Số khóa học">
           <template #default="scope">
             <el-tag>
               {{ scope.row.status }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="price" label="Gia" />
-        <el-table-column prop="rate" label="Danh gia" />
-        <el-table-column prop="categoryId" label="Danh muc" />
+        <el-table-column prop="totalPrice" label="Tổng tiền" />
+        <el-table-column prop="userId" label="Người tạo đơn" />
         <el-table-column prop="createdAt" label="Ngày tạo đơn" />
-        <el-table-column prop="updatedAt" label="Ngày cập nhập đơn" />
         <el-table-column prop="status" label="Hanh dong">
           <template #default="scope">
             <el-button @click="updateCourse(scope.row)">
-              <el-icon><RefreshLeft /></el-icon>
+              <el-icon>
+                <RefreshLeft />
+              </el-icon>
             </el-button>
             <el-popconfirm
                 class="box-item"
@@ -37,7 +51,9 @@
             >
               <template #reference>
                 <el-button @click="deleteCourse(scope.row)" type="danger">
-                  <el-icon><Delete /></el-icon>
+                  <el-icon>
+                    <Delete />
+                  </el-icon>
                 </el-button>
               </template>
             </el-popconfirm>
@@ -71,7 +87,7 @@
       </el-form-item>
       <el-form-item label-position="top" label="Danh muc" prop="categoryId">
         <el-select v-model="course.categoryId" multiple-limit="1">
-          <el-option v-for="item in listCate" :value="item.id">
+          <el-option v-for="item in listCourse" :value="item.id">
             {{ item.name }}
           </el-option>
         </el-select>
@@ -83,41 +99,29 @@
         <el-upload :limit="1" @change="handleProcessFile">
           <el-button type="primary">Click to upload</el-button>
         </el-upload>
-        <div style="position: relative;top: -5px;right: -5px" v-if="imgUpload">
-          <span style="position: absolute;color: red;font-size: 14px;cursor: pointer" @click="handleRemoveFile">X</span>
-          <img :src="imgUpload" alt="avatar..." style="width: 50px;height: 50px;object-fit: cover" />
-        </div>
       </el-form-item>
     </el-form>
   </CreateDialog>
 </template>
 
 <script setup lang="ts">
-  import { onMounted, reactive, ref, watchEffect } from 'vue'
+  import { onMounted, reactive, ref, watch, watchEffect } from 'vue'
   import DataTable from '@/components/datatable/DataTable.vue'
   import CreateDialog from '@/components/dialog/CreateDialog.vue'
   import LevelStudent from '@/enums/LevelStudent.ts'
   import type { FormInstance, FormRules } from 'element-plus'
   import CourseApi from '@/api/CourseApi.ts'
   import AlertService from '@/service/AlertService.ts'
-  import CategoryApi from '@/api/CategoryApi.ts'
-  import {RefreshLeft,Delete} from "@element-plus/icons-vue";
+  import LectureApi from '@/api/LectureApi.ts'
+  import { SortField } from '@/type/SortField.ts'
 
   const dataTable = ref()
-  const imgUpload = ref()
   const createDialog = ref()
-  const listCate = ref()
-  const listCourse = ref([{
-    id: null,
-    title: '',
-    desc: '',
-    level: LevelStudent.BEGINNER,
-    price: null,
-    thumbnail: null,
-    categoryId: null
-  }])
+  const listCourse = ref<any>([])
   const createCourseForm = ref<FormInstance>()
   const loading = ref(false)
+  const courseIdSelected = ref(1)
+  const listLectureByIdCourse = ref<any>([])
 
 
   const validationPrice = (rule: any, value: any, callback: any) => {
@@ -157,33 +161,27 @@
   const handleProcessFile = (file: any) => {
     if (file.raw) {
       course.thumbnail = file.raw
-      imgUpload.value = URL.createObjectURL(file.raw)
     }
   }
 
-  const handleRemoveFile = () => {
-    imgUpload.value = ''
-    course.thumbnail = null
-  }
-
-  const updateCourse = (row:any)=>{
-    course.id = row.id;
-    course.desc = row.desc;
-    course.price = row.price;
-    course.title = row.title;
-    course.level = row.level;
-    course.categoryId = row.categoryId;
-    course.thumbnail = row.thumbnail;
+  const updateCourse = (row: any) => {
+    course.id = row.id
+    course.desc = row.desc
+    course.price = row.price
+    course.title = row.title
+    course.level = row.level
+    course.categoryId = row.categoryId
+    course.thumbnail = row.thumbnail
     createDialog.value?.show()
   }
 
-  const deleteCourse = async (row:any)=>{
-     const res = await CourseApi.deleteCourse([row.id]);
-     if(res.code===200){
-       AlertService.success("Thanh cong","xoa san pham thanh cong")
-     }else{
-       AlertService.error("That bai","xoa san pham that bai")
-     }
+  const deleteCourse = async (row: any) => {
+    const res = await CourseApi.deleteCourse([row.id])
+    if (res.code === 200) {
+      AlertService.success('Thanh cong', 'xoa san pham thanh cong')
+    } else {
+      AlertService.error('That bai', 'xoa san pham that bai')
+    }
   }
 
   function handleShowCreateCourse() {
@@ -216,22 +214,18 @@
     })
   }
 
-  const getListCategory = async () => {
-    const res = await CategoryApi.getListCategory()
-    listCate.value = res.data
+  const getListCourses = async () => {
+    const res = await CourseApi.getListCourseNotPagi()
+    listCourse.value = res.data
   }
 
-  const getListCourse = async (pageRequest: any)=>{
-    return await CourseApi.getListCourses(pageRequest);
+  const getListLectureByCourseId = async (prams: any) => {
+    listLectureByIdCourse.value = await LectureApi.getLecturesByCourseId(prams,1)
   }
 
-  onMounted(async () => {
-    await getListCategory()
-  })
-
-  watchEffect(() => {
-    console.log(listCourse.value)
-  })
+  // watch(courseIdSelected,async (newVal,oldVal)=>{
+  //   dataTable.value?.getData()
+  // })
 
 </script>
 
@@ -239,3 +233,4 @@
 <style scoped lang="scss">
 
 </style>
+

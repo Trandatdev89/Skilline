@@ -8,7 +8,7 @@ class AuthenticationSecurity {
     return localStorage.getItem('refreshToken')
   }
 
-  public isAuthentication(){
+  public getRole(){
 
   }
 

@@ -9,6 +9,11 @@
     </span>
       <template #dropdown>
         <el-dropdown-menu>
+          <el-dropdown-item v-if="role==='ADMIN'">
+            <RouterLink to="/admin/dashboard">
+              Trang quản lý
+            </RouterLink>
+          </el-dropdown-item>
           <el-dropdown-item v-for="(item,index) in props.listLink" :key="index">
             <RouterLink :to="item.url">
               {{ item.label }}
@@ -22,11 +27,17 @@
 
 <script setup lang="ts">
 
+  import { getRole } from '@/security/getRole.ts'
+
+  const role = getRole();
+
   const props = defineProps<{
     title: string,
     avatar: string,
-    listLink: { label: string; url: string }[]
+    listLink: { label: string; url: string;}[]
   }>()
+
+  console.log(role);
 
 </script>
 

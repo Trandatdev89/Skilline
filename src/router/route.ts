@@ -4,25 +4,27 @@ import LayoutDefault from '@/layout/layout-default/LayoutDefault.vue'
 import LayoutAdmin from '@/layout/layout-admin/LayoutAdmin.vue'
 import About from '@/views/About.vue'
 import Pages from '@/router/pages.ts'
+import pages from '@/router/pages.ts'
 import Login from '@/views/login/Login.vue'
 import Post from '@/views/Post.vue'
 import Redirect from '@/redirect/Redirect.vue'
 import AuthenticationSecurity from '@/security/AuthenticationSecurity.ts'
 import { jwtDecode } from 'jwt-decode'
-import pages from '@/router/pages.ts'
 import Fobiden from '@/views/errorPage/Fobiden.vue'
 import Course from '@/views/Course.vue'
 import Lecture from '@/views/Lecture.vue'
 import Order from '@/views/Order.vue'
 import Cart from '@/views/Cart.vue'
 import Register from '@/views/login/Register.vue'
-import Test from '@/views/Test.vue'
 import Dashboard from '@/views/admin/Dashboard.vue'
-import Test2 from '@/views/Test2.vue'
 import ManageCourse from '@/views/admin/ManageCourse.vue'
 import Success from '@/views/Success.vue'
 import Logout from '@/views/Logout.vue'
 import Category from '@/views/Category.vue'
+import ManageOrder from '@/views/admin/ManageOrder.vue'
+import ManageFile from '@/views/admin/ManageFile.vue'
+import Setting from '@/views/admin/Setting.vue'
+import ManageLecture from '@/views/admin/ManageLecture.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -112,17 +114,25 @@ const router = createRouter({
         {
           ...Pages.manageCourses,
           component: ManageCourse
+        },
+        {
+          ...Pages.manageLecture,
+          component: ManageLecture
+        },
+        {
+          ...Pages.manageOrder,
+          component: ManageOrder
+        },
+        {
+          ...Pages.manageFile,
+          component: ManageFile
+        },
+        {
+          ...Pages.setting,
+          component: Setting
         }
       ]
-    },
-    {
-      ...Pages.test,
-      component: Test
-    },
-    {
-      ...Pages.test2,
-      component: Test2
-    },
+    }
   ]
 });
 
@@ -131,11 +141,9 @@ router.beforeEach((to, from, next) => {
   console.log(accessToken);
   // Kiểm tra route có cần authentication không
   if (to.matched.some(item => item.meta.requireAuth)) {
-    // Kiểm tra accessToken trước khi decode
     if (!accessToken) {
       return next(pages.login.path)
     }
-
     try {
       const tokenDecode = jwtDecode<any>(accessToken)
       const role = tokenDecode?.scope

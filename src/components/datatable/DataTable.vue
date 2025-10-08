@@ -29,7 +29,7 @@
 
   const data = ref<any>([])
   const page = ref<number>(1)
-  const size = ref<number>(1)
+  const size = ref<number>(10)
   const totalElement = ref<number>(0)
   const totalPage = ref<number>(0)
   const loading = ref<boolean>(false)
@@ -59,11 +59,12 @@
       keyword: 'id'
     }
     const res = await props?.getDataFunction(request)
-    if (res.code === 200) {
+    console.log(res);
+    if (res) {
       data.value = res.data.list
       updatePageRequest(res.data)
     } else {
-      AlertService.error('Error', res.message)
+      AlertService.error('Error', '')
     }
     loading.value = false
   }

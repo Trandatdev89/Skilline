@@ -19,7 +19,9 @@
             <el-icon>
               <Menu />
             </el-icon>
-            <span>Trang điều khiển</span>
+            <span><RouterLink to="/admin/dashboard">
+                Trang quản lý
+              </RouterLink></span>
           </template>
           <el-menu-item index="1-1">Item 1</el-menu-item>
           <el-menu-item index="1-2">Item 2</el-menu-item>
@@ -31,12 +33,11 @@
               <Monitor />
             </el-icon>
             <span>
-              <RouterLink to="/courses">
+              <RouterLink to="/admin/courses">
                 Quản lý khóa học
               </RouterLink>
               </span>
           </template>
-          <el-menu-item>Item 4</el-menu-item>
         </el-sub-menu>
         <el-sub-menu index="3">
           <template #title>
@@ -44,7 +45,7 @@
               <Tickets />
             </el-icon>
             <span>
-              <RouterLink to="/orders">
+              <RouterLink to="/admin/order">
                 Quản lý đơn hàng
               </RouterLink>
             </span>
@@ -53,16 +54,17 @@
           <el-menu-item>Item 6</el-menu-item>
         </el-sub-menu>
         <el-menu-item index="4">
-          <el-icon>
-            <Files />
-          </el-icon>
           <template #title>
+            <el-icon>
+              <Tickets />
+            </el-icon>
             <span>
-              <RouterLink to="/files">
-                Quản lý tài liệu
+              <RouterLink to="/admin/lecture">
+                Quản lý bai học
               </RouterLink>
             </span>
           </template>
+
         </el-menu-item>
         <el-menu-item index="5">
           <el-icon>
@@ -70,7 +72,7 @@
           </el-icon>
           <template #title>
              <span>
-              <RouterLink to="/setting">
+              <RouterLink to="/admin/setting">
                 Cài đặt
               </RouterLink>
             </span>
@@ -121,9 +123,9 @@
     }
   }
 
-  a{
+  a {
     text-decoration: none !important;
-    color:#000;
+    color: #000;
   }
 
 </style>

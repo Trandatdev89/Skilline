@@ -1,5 +1,5 @@
 const enum LevelStudent{
-  BEGINNER='Beginner',ADVANCE="Advance"
+  BEGINNER='BEGINNER',ADVANCE="BEGINNER"
 };
 
 export default LevelStudent;

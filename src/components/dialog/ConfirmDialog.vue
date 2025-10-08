@@ -24,18 +24,9 @@
    const visiableDialog = ref<boolean>(false);
    const emit = defineEmits(['on-submit','close-dialog']);
    const props = defineProps<{
-     title:{
-       require:true,
-       type:string
-     },
-     message:{
-       require:true,
-       type:string
-     },
-     typeConfirm:{
-       require:true,
-       type:string
-     }
+     title:string,
+     message:string,
+     typeConfirm:string
    }>();
 
    const submitDialog = ()=>{

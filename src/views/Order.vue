@@ -141,10 +141,10 @@
   const { userInfo } = storeToRefs(authenticationStore)
 
   const orderReq = reactive({
-    userId: userInfo.userId,
-    totalPrice: listOrder.total,
+    userId: userInfo.value.userId,
+    totalPrice: listOrder.value.total,
     status: 'PAID',
-    courseId: listOrder.order?.map(item => item.id)
+    courseId: listOrder.value.order?.map(item => Number(item.id))
   })
 
   // Form validation rules
@@ -172,13 +172,12 @@
   const courseImage = ref('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjgwIiB2aWV3Qm94PSIwIDAgMTAwIDgwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjNjY3ZWVhIi8+CjxyZWN0IHg9IjEwIiB5PSIxMCIgd2lkdGg9IjgwIiBoZWlnaHQ9IjYwIiBmaWxsPSIjNzY0YmEyIi8+Cjx0ZXh0IHg9IjUwIiB5PSI0NSIgZmlsbD0id2hpdGUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+QzwvdGV4dD4KPC9zdmc+')
 
   const handlePayment = async () => {
-    console.log(userInfo.id,orderReq.totalPrice);
     try {
       paymentLoading.value = true
       const responseOrder = await OrderApi.saveOrder(orderReq)
-      if (responseOrder.data === 200) {
+      if (responseOrder.code === 200) {
         const responsePaymentOnline = await PaymentApi.vnPayment(
-            `payment?orderId=${responseOrder?.data?.id}&amount=${orderReq.totalPrice}&orderInfo=Nguời dùng có id ${orderReq.userId} chuyển khoản`)
+            `?orderId=${parseInt(responseOrder?.data.id)}&amount=${responseOrder?.data.totalPrice}&orderInfo=Nguời dùng có id ${responseOrder?.data.userId} chuyển khoản`)
         window.location.href = responsePaymentOnline?.url
       } else {
         AlertService.error('Thất bai!', 'Đơn hàng chưa được đặt')
@@ -190,7 +189,7 @@
   }
 
   watchEffect(()=>{
-    console.log(userInfo.id,listOrder);
+    console.log(userInfo,listOrder);
   })
 </script>
 

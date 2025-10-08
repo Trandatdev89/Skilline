@@ -25,7 +25,7 @@
         </div>
 
         <!-- Course Item -->
-        <div class="course-item" v-for="(item,index) in listCourse" :key="index">
+        <div class="course-item" v-for="(item,index) in listCourseInCart" :key="index">
           <div class="course-info">
             <div class="course-image">
               <img
@@ -92,8 +92,10 @@
   const route = useRouter()
   const { listCourse } = storeToRefs(useCartStore())
   const { handleSubCart, handleDeletes } = useCartStore()
+  const listCourseInCart = ref<any>([]);
+
   const totalAmount = computed(() => {
-    return listCourse.value?.reduce((sum: any, item: any) => sum + (item.price || 0), 0) ?? 0
+    return listCourseInCart.value?.reduce((sum: any, item: any) => sum + (item.price || 0), 0) ?? 0
   })
 
   const handleRemoveItem = (index: number, id: number) => {
@@ -101,9 +103,18 @@
   }
 
   const handlePayment = () => {
-    orderStore.getListOrderNeedPayment(listCourse.value, totalAmount.value)
+    orderStore.getListOrderNeedPayment(listCourseInCart.value, totalAmount.value)
     route.push('/order')
   }
+
+  const getListCourse = async () =>{
+    const res = await CourseApi.getListCourseById(listCourse.value);
+    listCourseInCart.value = res.data;
+  }
+
+  onMounted(async ()=>{
+    await getListCourse();
+  })
 
 </script>
 

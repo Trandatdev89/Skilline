@@ -16,13 +16,16 @@ const Pages = {
     cart : {name:'cart',path:'/cart'},
     success : {name:'success',path:'/success'},
     category : {name:'category',path:'/category'},
-    test : {name:'test',path:'/test'},
-    test2 : {name:'test2',path:'/test2'},
+
 
     //ADMIN:
     layoutAdmin:{name:'layout-admin',path:'/admin/dashboard'},
     dashboard:{name:'dashboard',path:'/admin/dashboard'},
-    manageCourses:{name:'courses',path:'/admin/courses'},
+    manageCourses:{name:'manage-courses',path:'/admin/courses'},
+    manageOrder:{name:'manage-order',path:'/admin/order'},
+    manageFile:{name:'manage-file',path:'/admin/file'},
+    setting:{name:'setting',path:'/admin/setting'},
+    manageLecture : {name:'manage-lecture',path:'/admin/lecture'},
 }
 
 export default Pages;

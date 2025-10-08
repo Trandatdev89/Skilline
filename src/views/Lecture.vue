@@ -207,7 +207,7 @@
 
   const handleAdd = () => {
 
-    const isAdd = handleAddToCart(course);
+    const isAdd = handleAddToCart(courseId);
     if (isAdd) {
       AlertService.success("Thành công","Thêm sản phẩm vào giỏ thành công")
     } else {

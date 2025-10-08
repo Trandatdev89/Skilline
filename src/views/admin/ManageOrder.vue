@@ -8,23 +8,19 @@
     <div class="order__table">
       <DataTable
           ref="dataTable"
-          :get-data-function="getListCourse"
+          :get-data-function="getDataOrder"
       >
         <el-table-column prop="id" label="ID" />
-        <el-table-column prop="title" label="Tieu de" />
-        <el-table-column prop="level" label="Cap do" />
-        <el-table-column prop="status" label="Trạng thái">
+        <el-table-column prop="quantity" label="Số khóa học">
           <template #default="scope">
             <el-tag>
               {{ scope.row.status }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="price" label="Gia" />
-        <el-table-column prop="rate" label="Danh gia" />
-        <el-table-column prop="categoryId" label="Danh muc" />
+        <el-table-column prop="totalPrice" label="Tổng tiền" />
+        <el-table-column prop="userId" label="Người tạo đơn" />
         <el-table-column prop="createdAt" label="Ngày tạo đơn" />
-        <el-table-column prop="updatedAt" label="Ngày cập nhập đơn" />
         <el-table-column prop="status" label="Hanh dong">
           <template #default="scope">
             <el-button @click="updateCourse(scope.row)">
@@ -102,6 +98,7 @@
   import AlertService from '@/service/AlertService.ts'
   import CategoryApi from '@/api/CategoryApi.ts'
   import {RefreshLeft,Delete} from "@element-plus/icons-vue";
+  import orderApi from '@/api/OrderApi.ts'
 
   const dataTable = ref()
   const imgUpload = ref()
@@ -178,12 +175,12 @@
   }
 
   const deleteCourse = async (row:any)=>{
-     const res = await CourseApi.deleteCourse([row.id]);
-     if(res.code===200){
-       AlertService.success("Thanh cong","xoa san pham thanh cong")
-     }else{
-       AlertService.error("That bai","xoa san pham that bai")
-     }
+    const res = await CourseApi.deleteCourse([row.id]);
+    if(res.code===200){
+      AlertService.success("Thanh cong","xoa san pham thanh cong")
+    }else{
+      AlertService.error("That bai","xoa san pham that bai")
+    }
   }
 
   function handleShowCreateCourse() {
@@ -221,8 +218,8 @@
     listCate.value = res.data
   }
 
-  const getListCourse = async (pageRequest: any)=>{
-    return await CourseApi.getListCourses(pageRequest);
+  const getDataOrder = async (pageRequest: any) => {
+    return await orderApi.getOrders(pageRequest)
   }
 
   onMounted(async () => {
@@ -239,3 +236,4 @@
 <style scoped lang="scss">
 
 </style>
+

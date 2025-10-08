@@ -7,8 +7,12 @@ class LectureApi{
     return await httpApi.get(`/api/lecture/stream/${lectureId}`);
   }
 
-  async getLecturesByCourseId(lectureId:any): Promise<ApiResponse<any>>{
-    return await httpApi.get(`/api/lecture?courseId=${lectureId}`);
+  async getLecturesByCourseId(params:any,lectureId:any): Promise<ApiResponse<any>>{
+    console.log(params,lectureId);
+    const config = {
+      params: params ? params : {}
+    };
+    return await httpApi.get(`/api/lecture?courseId=${lectureId}`,config);
   }
 
 }
