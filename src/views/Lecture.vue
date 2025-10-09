@@ -14,7 +14,7 @@
 
             <div class="lesson-list">
               <div
-                  v-for="lesson in lessons"
+                  v-for="(lesson,index) in lessons"
                   :key="lesson.id"
                   class="lesson-item"
               >
@@ -22,10 +22,11 @@
                   <el-icon class="play-icon">
                     <VideoPlay />
                   </el-icon>
-                  <span class="lesson-title">{{ lesson.title }}</span>
+                  <span class="lesson-title">Bài {{index+1}} : {{ lesson.title }}</span>
                 </div>
                 <div class="lesson-actions">
                   <span
+                      v-if="isCheckUserBuy"
                       type="primary"
                       class="try-link"
                       @click="handleShowLecture(lesson.id)"
@@ -40,7 +41,7 @@
         </div>
 
         <!-- Course Info Sidebar -->
-        <div class="course-sidebar">
+        <div class="course-sidebar" v-if="!checkUserEnrollment">
           <!-- Video Preview -->
           <div class="video-preview">
             <div class="video-container">
@@ -170,7 +171,7 @@
   />
 </template>
 
-<script setup>
+<script setup lang="ts">
   import { onMounted, ref } from 'vue'
   import {
     VideoPlay,
@@ -185,25 +186,36 @@
   import LectureVideoDialog from '@/components/dialog/LectureVideoDialog.vue'
   import AlertService from '@/service/AlertService.js'
   import useCartStore from '@/stores/cart.js'
+  import EnrollmentApi from '@/api/EnrollmentApi.ts'
 
   const lessons = ref()
   const videoId = ref()
   const lectureVideoDialog = ref()
+  const accessToken = localStorage.getItem("accessToken");
 
   const route = useRoute()
   const courseId = route.query.courseId;
   const {handleAddToCart} = useCartStore();
+  const isCheckUserBuy = ref<boolean>(false);
 
   const getListLesson = async () => {
-    let res = await LectureApi.getLecturesByCourseId(courseId)
-    lessons.value = res.data
+    try {
+      let res = await LectureApi.getLecturesByCourseIdNotPagi(Number(courseId));
+      lessons.value = res.data;
+    } catch (error) {
+      console.error('Error fetching lectures:', error);
+    }
   }
 
-  const handleShowLecture = (id) => {
+  const checkUserEnrollment = async ()=>{
+    const res = await EnrollmentApi.checkUserEnrollment(Number(courseId));
+    isCheckUserBuy.value = res.data;
+  }
+
+  const handleShowLecture = (id:number) => {
     videoId.value = id
     lectureVideoDialog.value.show()
   }
-
 
   const handleAdd = () => {
 
@@ -217,6 +229,10 @@
 
   onMounted(() => {
     getListLesson()
+
+    if(accessToken){
+      checkUserEnrollment();
+    }
   })
 </script>
 

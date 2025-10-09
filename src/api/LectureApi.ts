@@ -11,7 +11,13 @@ class LectureApi{
     const config = {
       params: params ? params : {}
     };
+
+    console.log(config);
     return await httpApi.get(`/api/lecture`,config);
+  }
+
+  async getLecturesByCourseIdNotPagi(courseId:any): Promise<ApiResponse<any>>{
+    return await httpApi.get(`/api/lecture/not-pagi?courseId=${courseId}`);
   }
 
   async saveLecturesByCourseId(data:any): Promise<ApiResponse<any>>{

@@ -25,6 +25,8 @@ import ManageOrder from '@/views/admin/ManageOrder.vue'
 import ManageFile from '@/views/admin/ManageFile.vue'
 import Setting from '@/views/admin/Setting.vue'
 import ManageLecture from '@/views/admin/ManageLecture.vue'
+import ManageCategory from '@/views/ManageCategory.vue'
+import Bought from '@/views/Bought.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -78,6 +80,10 @@ const router = createRouter({
           component: Register
         },
         {
+          ...Pages.bought,
+          component: Bought
+        },
+        {
           ...Pages.order,
           component: Order
         },
@@ -118,6 +124,10 @@ const router = createRouter({
         {
           ...Pages.manageLecture,
           component: ManageLecture
+        },
+        {
+          ...Pages.manageCategory,
+          component: ManageCategory
         },
         {
           ...Pages.manageOrder,

@@ -97,6 +97,7 @@
   import CourseApi from '@/api/CourseApi.ts'
   import AlertService from '@/service/AlertService.ts'
   import LectureApi from '@/api/LectureApi.ts'
+  import { RefreshLeft, Delete } from '@element-plus/icons-vue'
 
   const dataTable = ref()
   const createDialog = ref()

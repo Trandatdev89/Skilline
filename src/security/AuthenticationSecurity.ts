@@ -1,3 +1,5 @@
+import { jwtDecode } from 'jwt-decode'
+
 class AuthenticationSecurity {
 
   public getAccessToken() {
@@ -11,7 +13,6 @@ class AuthenticationSecurity {
   public getRole(){
 
   }
-
 }
 
 export default new AuthenticationSecurity()

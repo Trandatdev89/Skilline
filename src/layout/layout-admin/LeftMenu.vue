@@ -27,6 +27,18 @@
           <el-menu-item index="1-2">Item 2</el-menu-item>
           <el-menu-item index="1-3">Item 3</el-menu-item>
         </el-sub-menu>
+        <el-menu-item index="10">
+          <template #title>
+            <el-icon>
+              <Monitor />
+            </el-icon>
+            <span>
+              <RouterLink to="/admin/category">
+                Quản lý danh muc
+              </RouterLink>
+              </span>
+          </template>
+        </el-menu-item>
         <el-sub-menu index="2">
           <template #title>
             <el-icon>

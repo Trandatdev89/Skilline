@@ -101,7 +101,7 @@
   const listLink = ref<any>([
     {
       label: 'Khóa học đã mua',
-      url: '/course'
+      url: '/bought'
     },
     {
       label: 'Thông tin cá nhân',

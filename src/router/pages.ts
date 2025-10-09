@@ -16,6 +16,7 @@ const Pages = {
     cart : {name:'cart',path:'/cart'},
     success : {name:'success',path:'/success'},
     category : {name:'category',path:'/category'},
+    bought : {name:'bought',path:'/bought'},
 
 
     //ADMIN:
@@ -23,6 +24,7 @@ const Pages = {
     dashboard:{name:'dashboard',path:'/admin/dashboard'},
     manageCourses:{name:'manage-courses',path:'/admin/courses'},
     manageOrder:{name:'manage-order',path:'/admin/order'},
+    manageCategory:{name:'manage-category',path:'/admin/category'},
     manageFile:{name:'manage-file',path:'/admin/file'},
     setting:{name:'setting',path:'/admin/setting'},
     manageLecture : {name:'manage-lecture',path:'/admin/lecture'},

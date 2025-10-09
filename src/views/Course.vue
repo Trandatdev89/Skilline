@@ -30,6 +30,8 @@
   const route = useRoute()
   const router = useRouter()
 
+
+
   const categoryId :any = route.query.categoryId || null
   const listCourse = ref<any>([])
 
@@ -38,7 +40,7 @@
     if (categoryId) {
       res = await CourseApi.getListCourseByCategoryId(categoryId)
     } else {
-      res = await CourseApi.getListCourses()
+      res = await CourseApi.getListCourseNotPagi()
     }
     listCourse.value = res.data
   }
