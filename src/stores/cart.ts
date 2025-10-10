@@ -15,8 +15,8 @@ const useCartStore = defineStore("cart-store",()=>{
     return isAdd;
   }
 
-  const handleSubCart = (listId:any[]) :any =>{
-    listCourse.value = listCourse.value.filter((item:any)=>!listId.includes(item.id));
+  const handleSubCart = (id:any) :any =>{
+    listCourse.value = listCourse.value.filter((item:any)=>item.id!==id);
   }
 
   const handleDeletes = () :any=>{

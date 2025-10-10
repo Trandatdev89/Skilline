@@ -8,9 +8,6 @@
 
           <!-- Lesson Section -->
           <div class="lesson-section">
-            <div class="section-header">
-              <h3>PHẦN 1: KIỂU DỮ LIỆU, BIẾN, VÒNG LẶP, HÀM</h3>
-            </div>
 
             <div class="lesson-list">
               <div
@@ -31,7 +28,7 @@
                       class="try-link"
                       @click="handleShowLecture(lesson.id)"
                   >
-                    Học thử
+                    Học
                   </span>
                   <span class="lesson-duration">{{ lesson.duration }}</span>
                 </div>
@@ -41,21 +38,21 @@
         </div>
 
         <!-- Course Info Sidebar -->
-        <div class="course-sidebar" v-if="!checkUserEnrollment">
+        <div class="course-sidebar" v-if="!isCheckUserBuy">
           <!-- Video Preview -->
           <div class="video-preview">
             <div class="video-container">
               <div class="video-placeholder">
                 <div class="video-content">
-                  <div class="course-badge">KHÓA HỌC LẬP TRÌNH C</div>
+                  <div class="course-badge"></div>
                   <div class="video-stats">
                     <span>QUA 130 VIDEO</span>
                     <span>VÀ 310 BÀI TẬP</span>
-                    <span>HACKERRANK</span>
+                    <span></span>
                   </div>
                   <div class="instructor-info">
                     <div class="instructor-avatar"></div>
-                    <span>28+ HƯỚNG DẪN CÀI ĐẶT DEV C++ ĐỂ LẬP TRÌNH</span>
+                    <span></span>
                   </div>
                   <el-button class="watch-btn">
                     <el-icon>

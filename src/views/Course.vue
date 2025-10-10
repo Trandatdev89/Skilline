@@ -6,16 +6,120 @@
         <el-breadcrumb-item>Khóa học online</el-breadcrumb-item>
       </el-breadcrumb>
 
-      <div class="course-grid">
-        <template
-                  v-for="course in listCourse"
-                  :key="course.id">
-          <CardUi
-              @click="handleToLecture(course.id)"
-              :img="course?.thumbnail_url"
-              :title="course.title"
-              :content-course="course"/>
-        </template>
+      <div class="content-wrapper">
+        <!-- Sidebar Filter -->
+        <aside class="filter-sidebar">
+          <div class="filter-section">
+            <h3 class="filter-title">Bộ lọc</h3>
+
+            <!-- Search by Title -->
+            <div class="filter-group">
+              <label class="filter-label">Tìm kiếm khóa học</label>
+              <el-input
+                  v-model="filters.searchTitle"
+                  placeholder="Nhập tên khóa học..."
+                  :prefix-icon="Search"
+                  clearable
+                  @input="applyFilters"
+              />
+            </div>
+
+            <!-- Category Filter -->
+            <div class="filter-group">
+              <label class="filter-label">Danh mục</label>
+              <el-radio-group v-model="filters.categories" @change="applyFilters">
+                <el-radio
+                    v-for="item in category"
+                    :key="item.id"
+                    :label="item.id"
+                    class="category-checkbox"
+                >
+                  {{ item.name }}
+                </el-radio>
+              </el-radio-group>
+            </div>
+
+            <!-- Price Filter -->
+            <div class="filter-group">
+              <label class="filter-label">Khoảng giá</label>
+              <el-radio-group v-model="filters.priceRange" @change="applyFilters">
+                <el-radio label="all" class="price-radio">Tất cả</el-radio>
+                <el-radio label="free" class="price-radio">Miễn phí</el-radio>
+                <el-radio label="under-500k" class="price-radio">Dưới 500,000đ</el-radio>
+                <el-radio label="500k-1m" class="price-radio">500,000đ - 1,000,000đ</el-radio>
+                <el-radio label="1m-2m" class="price-radio">1,000,000đ - 2,000,000đ</el-radio>
+                <el-radio label="above-2m" class="price-radio">Trên 2,000,000đ</el-radio>
+              </el-radio-group>
+            </div>
+
+            <!-- Custom Price Range -->
+            <div class="filter-group">
+              <label class="filter-label">Hoặc tùy chỉnh giá</label>
+              <div class="price-inputs">
+                <el-input-number
+                    v-model="filters.minPrice"
+                    :min="0"
+                    :max="10000000"
+                    :step="100000"
+                    placeholder="Từ"
+                    controls-position="right"
+                    @change="applyFilters"
+                />
+                <span class="price-separator">-</span>
+                <el-input-number
+                    v-model="filters.maxPrice"
+                    :min="0"
+                    :max="10000000"
+                    :step="100000"
+                    placeholder="Đến"
+                    controls-position="right"
+                    @change="applyFilters"
+                />
+              </div>
+            </div>
+
+            <!-- Reset Button -->
+            <el-button
+                type="danger"
+                plain
+                class="reset-btn"
+                @click="resetFilters"
+            >
+              <el-icon><RefreshLeft /></el-icon>
+              Xóa bộ lọc
+            </el-button>
+          </div>
+        </aside>
+
+        <!-- Course Grid -->
+        <main class="course-content">
+          <div class="result-header">
+            <span class="result-count">Tìm thấy {{ filteredCourses.length }} khóa học</span>
+            <el-select v-model="sortBy" placeholder="Sắp xếp" class="sort-select" @change="applySorting">
+              <el-option label="Mới nhất" value="newest" />
+              <el-option label="Giá thấp đến cao" value="price-asc" />
+              <el-option label="Giá cao đến thấp" value="price-desc" />
+              <el-option label="Tên A-Z" value="name-asc" />
+            </el-select>
+          </div>
+
+          <div class="course-grid" v-if="filteredCourses.length > 0">
+            <template v-for="course in filteredCourses" :key="course.id">
+              <CardUi
+                  @click="handleToLecture(course.id)"
+                  :img="course?.thumbnail_url"
+                  :title="course.title"
+                  :content-course="course"
+              />
+            </template>
+          </div>
+
+          <el-empty
+              v-else
+              description="Không tìm thấy khóa học phù hợp"
+              :image-size="200"
+          />
+        </main>
       </div>
     </div>
   </div>
@@ -24,33 +128,143 @@
 <script setup lang="ts">
   import { useRoute, useRouter } from 'vue-router'
   import CourseApi from '@/api/CourseApi.js'
-  import { onMounted, ref } from 'vue'
+  import { onMounted, ref, computed } from 'vue'
   import CardUi from '@/components/card/CardUi.vue'
+  import { Search, RefreshLeft } from '@element-plus/icons-vue'
+  import Category from '@/views/Category.vue'
+  import CategoryApi from '@/api/CategoryApi.ts'
 
   const route = useRoute()
   const router = useRouter()
 
-
-
-  const categoryId :any = route.query.categoryId || null
+  const categoryId: any = route.query.categoryId || null
   const listCourse = ref<any>([])
+  const sortBy = ref('newest')
+
+  // Filter state
+  const filters = ref({
+    searchTitle: '',
+    categories: [],
+    priceRange: 'all',
+    minPrice: null,
+    maxPrice: null
+  })
+
+  // Mock categories - thay thế bằng API thực tế
+  const category = ref<any>([])
 
   const getListCourse = async () => {
     let res
     if (categoryId) {
       res = await CourseApi.getListCourseByCategoryId(categoryId)
+      filters.value.categories = [parseInt(categoryId)]
     } else {
       res = await CourseApi.getListCourseNotPagi()
     }
     listCourse.value = res.data
   }
 
-  const handleToLecture = (courseId:number) => {
+  const filteredCourses = computed(() => {
+    let result = [...listCourse.value]
+
+    // Filter by title
+    if (filters.value.searchTitle) {
+      const searchTerm = filters.value.searchTitle.toLowerCase()
+      result = result.filter(course =>
+          course.title.toLowerCase().includes(searchTerm)
+      )
+    }
+
+    // Filter by categories
+    if (filters.value.categories.length > 0) {
+      console.log("oki",filters.value.categories)
+      result = result.filter(course =>
+          filters.value.categories.includes(course.categoryId)
+      )
+    }
+
+    // Filter by price range
+    if (filters.value.priceRange !== 'all') {
+      result = result.filter(course => {
+        const price = course.price || 0
+        switch (filters.value.priceRange) {
+          case 'free':
+            return price === 0
+          case 'under-500k':
+            return price > 0 && price < 500000
+          case '500k-1m':
+            return price >= 500000 && price <= 1000000
+          case '1m-2m':
+            return price > 1000000 && price <= 2000000
+          case 'above-2m':
+            return price > 2000000
+          default:
+            return true
+        }
+      })
+    }
+
+    // Filter by custom price range
+    if (filters.value.minPrice !== null || filters.value.maxPrice !== null) {
+      result = result.filter(course => {
+        const price = course.price || 0
+        const min = filters.value.minPrice || 0
+        const max = filters.value.maxPrice || Infinity
+        return price >= min && price <= max
+      })
+    }
+
+    return result
+  })
+
+  const applyFilters = (value:any) => {
+     console.log(filters.value);
+  }
+
+  const applySorting = () => {
+    const courses = [...filteredCourses.value]
+
+    switch (sortBy.value) {
+      case 'price-asc':
+        courses.sort((a, b) => (a.price || 0) - (b.price || 0))
+        break
+      case 'price-desc':
+        courses.sort((a, b) => (b.price || 0) - (a.price || 0))
+        break
+      case 'name-asc':
+        courses.sort((a, b) => a.title.localeCompare(b.title))
+        break
+      case 'newest':
+      default:
+        courses.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+    }
+
+    listCourse.value = courses
+  }
+
+  const resetFilters = () => {
+    filters.value = {
+      searchTitle: '',
+      categories: categoryId ? [parseInt(categoryId)] : [],
+      priceRange: 'all',
+      minPrice: null,
+      maxPrice: null
+    }
+    sortBy.value = 'newest'
+  }
+
+  const handleToLecture = (courseId: number) => {
     router.push(`/lecture?courseId=${courseId}`)
   }
 
+  const getListCategory = async ()=>{
+    const  res = await CategoryApi.getListCategory();
+    category.value = res.data;
+  }
+
   onMounted(() => {
-    getListCourse()
+    getListCourse();
+    getListCategory();
   })
 </script>
 
@@ -66,373 +280,152 @@
       color: #666;
     }
 
-    .course-grid {
+    .content-wrapper {
       display: flex;
       gap: 30px;
+      align-items: flex-start;
     }
 
-    .course-card {
+    // Filter Sidebar Styles
+    .filter-sidebar {
+      width: 300px;
+      flex-shrink: 0;
       background: white;
-      border-radius: 20px;
-      overflow: hidden;
-      cursor: pointer;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+      position: sticky;
+      top: 20px;
+      max-height: calc(100vh - 40px);
+      overflow-y: auto;
 
-      &:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+      &::-webkit-scrollbar {
+        width: 6px;
       }
 
-      .card-header {
-        position: relative;
-        height: 280px;
-        padding: 30px;
+      &::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 10px;
+
+        &:hover {
+          background: #555;
+        }
+      }
+
+      .filter-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: #333;
+        margin: 0 0 24px 0;
+        padding-bottom: 16px;
+        border-bottom: 2px solid #f0f0f0;
+      }
+
+      .filter-group {
+        margin-bottom: 28px;
+
+        .filter-label {
+          display: block;
+          font-size: 15px;
+          font-weight: 600;
+          color: #333;
+          margin-bottom: 12px;
+        }
+
+        .category-checkbox,
+        .price-radio {
+          display: flex;
+          width: 100%;
+          margin: 0 0 10px 0;
+          padding: 8px 0;
+
+          :deep(.el-checkbox__label),
+          :deep(.el-radio__label) {
+            font-size: 14px;
+            color: #666;
+          }
+        }
+
+        .price-inputs {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+
+          .el-input-number {
+            flex: 1;
+          }
+
+          .price-separator {
+            color: #999;
+            font-weight: 500;
+          }
+        }
+      }
+
+      .reset-btn {
+        width: 100%;
+        margin-top: 12px;
+        height: 40px;
+        font-weight: 600;
+        border-radius: 8px;
+      }
+    }
+
+    // Course Content Styles
+    .course-content {
+      flex: 1;
+      min-width: 0;
+
+      .result-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        overflow: hidden;
+        margin-bottom: 24px;
+        padding: 16px 20px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 
-        &.c-programming {
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          color: white;
-
-          &::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="20" cy="20" r="1" fill="%23ffffff" opacity="0.1"/><circle cx="80" cy="40" r="1" fill="%23ffffff" opacity="0.08"/><circle cx="40" cy="80" r="1" fill="%23ffffff" opacity="0.12"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
-          }
-        }
-
-        &.python-course {
-          background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-          color: white;
-
-          &::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="%23ffffff" opacity="0.1"/><circle cx="75" cy="45" r="1" fill="%23ffffff" opacity="0.08"/><circle cx="45" cy="75" r="1" fill="%23ffffff" opacity="0.12"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
-          }
-        }
-
-        .discount-badge {
-          position: absolute;
-          top: 20px;
-          right: 20px;
-          background: #00ff88;
-          color: #000;
-          padding: 8px 16px;
-          border-radius: 20px;
-          font-weight: bold;
-          font-size: 14px;
-        }
-
-        .hot-badge {
-          position: absolute;
-          top: 20px;
-          left: 20px;
-          background: #00d4ff;
-          color: white;
-          padding: 8px 16px;
-          border-radius: 20px;
-          font-weight: bold;
-          font-size: 12px;
-        }
-
-        .course-info {
-          flex: 1;
-          z-index: 2;
-
-          .course-title {
-            margin-bottom: 25px;
-
-            h1, h2, h3 {
-              margin: 0;
-              line-height: 1.2;
-            }
-
-            h1 {
-              font-size: 2.5rem;
-              font-weight: 900;
-              color: #ffd700;
-            }
-
-            h2 {
-              font-size: 1.8rem;
-              font-weight: 800;
-            }
-
-            h3 {
-              font-size: 1rem;
-              font-weight: 600;
-              opacity: 0.9;
-            }
-          }
-
-          .course-features {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-
-            li {
-              margin-bottom: 8px;
-              font-size: 14px;
-              font-weight: 500;
-              opacity: 0.95;
-            }
-          }
-
-          .register-btn {
-            margin-top: 20px;
-            background: #00ff88;
-            border: none;
-            color: #000;
-            font-weight: bold;
-            padding: 12px 24px;
-            border-radius: 8px;
-
-            &:hover {
-              background: #00e077;
-            }
-          }
-        }
-
-        .course-illustration {
-          flex-shrink: 0;
-          width: 200px;
-          height: 200px;
-          position: relative;
-          z-index: 1;
-
-          .logo-h {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            width: 50px;
-            height: 50px;
-            background: #00ff88;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            font-weight: bold;
-            color: #000;
-          }
-
-          .refresh-icon {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            width: 40px;
-            height: 40px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-          }
-
-          .character-c, .character-python {
-            position: absolute;
-            bottom: 0;
-            right: 0;
-            width: 120px;
-            height: 120px;
-
-            .laptop {
-              width: 40px;
-              height: 30px;
-              background: #333;
-              border-radius: 4px;
-              position: absolute;
-              bottom: 40px;
-              left: 20px;
-
-              &::after {
-                content: '';
-                width: 35px;
-                height: 20px;
-                background: #4a90e2;
-                position: absolute;
-                top: 5px;
-                left: 2.5px;
-                border-radius: 2px;
-              }
-            }
-
-            .person {
-              width: 30px;
-              height: 40px;
-              background: #ffd4a3;
-              border-radius: 15px 15px 8px 8px;
-              position: absolute;
-              bottom: 50px;
-              right: 30px;
-
-              &::before {
-                content: '';
-                width: 20px;
-                height: 20px;
-                background: #8b4513;
-                border-radius: 50%;
-                position: absolute;
-                top: -10px;
-                left: 5px;
-              }
-            }
-
-            .chair {
-              width: 60px;
-              height: 20px;
-              background: rgba(255, 255, 255, 0.3);
-              border-radius: 10px;
-              position: absolute;
-              bottom: 20px;
-              left: 10px;
-            }
-
-            .plant {
-              width: 15px;
-              height: 25px;
-              background: #4caf50;
-              border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
-              position: absolute;
-              bottom: 15px;
-              right: 10px;
-            }
-          }
-
-          &.python-illustration {
-            .python-logos {
-              position: absolute;
-              top: 10px;
-              right: 10px;
-
-              .python-logo {
-                width: 30px;
-                height: 30px;
-                background: #ffd43b;
-                border-radius: 50%;
-                margin-bottom: 10px;
-                position: relative;
-
-                &::after {
-                  content: '🐍';
-                  position: absolute;
-                  top: 50%;
-                  left: 50%;
-                  transform: translate(-50%, -50%);
-                  font-size: 16px;
-                }
-              }
-
-              .ai-chip {
-                background: rgba(255, 255, 255, 0.2);
-                padding: 4px 8px;
-                border-radius: 8px;
-                font-size: 12px;
-                font-weight: bold;
-                text-align: center;
-              }
-            }
-
-            .character-python {
-              .person {
-                background: #ffd4a3;
-
-                &::before {
-                  background: #d4af37;
-                }
-              }
-
-              .desk {
-                width: 80px;
-                height: 25px;
-                background: #8b4513;
-                border-radius: 8px;
-                position: absolute;
-                bottom: 20px;
-                left: 5px;
-              }
-
-              .accessories {
-                position: absolute;
-                bottom: 45px;
-                right: 10px;
-
-                &::before {
-                  content: '☕';
-                  position: absolute;
-                  font-size: 12px;
-                }
-
-                &::after {
-                  content: '📱';
-                  position: absolute;
-                  right: -15px;
-                  font-size: 12px;
-                }
-              }
-            }
-          }
-        }
-      }
-
-      .card-content {
-        padding: 25px;
-
-        h4 {
+        .result-count {
           font-size: 16px;
           font-weight: 600;
           color: #333;
-          margin: 0 0 20px 0;
-          line-height: 1.4;
         }
 
-        .course-stats {
-          display: flex;
-          gap: 20px;
-          margin-bottom: 20px;
-
-          .stat {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 14px;
-            color: #666;
-
-            .el-icon {
-              font-size: 16px;
-            }
-          }
+        .sort-select {
+          width: 200px;
         }
+      }
 
-        .price-section {
-          display: flex;
-          align-items: center;
-          gap: 15px;
+      .course-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 24px;
+      }
+    }
+  }
 
-          .current-price {
-            font-size: 20px;
-            font-weight: bold;
-            color: #e74c3c;
-          }
+  // Responsive Design
+  @media (max-width: 1200px) {
+    .course-page {
+      .content-wrapper {
+        flex-direction: column;
+      }
 
-          .original-price {
-            font-size: 16px;
-            color: #999;
-            text-decoration: line-through;
-          }
+      .filter-sidebar {
+        width: 100%;
+        position: static;
+        max-height: none;
+      }
+
+      .course-content {
+        .course-grid {
+          grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
         }
       }
     }
@@ -442,32 +435,27 @@
     .course-page {
       padding: 15px;
 
-      .course-grid {
-        grid-template-columns: 1fr;
-        gap: 20px;
+      .filter-sidebar {
+        padding: 20px;
+
+        .filter-title {
+          font-size: 18px;
+        }
       }
 
-      .course-card {
-        .card-header {
-          height: 240px;
-          padding: 20px;
+      .course-content {
+        .result-header {
           flex-direction: column;
-          text-align: center;
+          gap: 12px;
+          align-items: stretch;
 
-          .course-illustration {
-            width: 150px;
-            height: 150px;
-            margin-top: 20px;
+          .sort-select {
+            width: 100%;
           }
         }
 
-        .card-content {
-          padding: 20px;
-
-          .course-stats {
-            flex-direction: column;
-            gap: 10px;
-          }
+        .course-grid {
+          grid-template-columns: 1fr;
         }
       }
     }

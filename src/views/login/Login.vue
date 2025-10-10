@@ -75,12 +75,12 @@
 
     formEl.validate(async (isValid) => {
       if (isValid) {
-        loading.value = true
         try {
-          const res = await AuthenticationApi.login(dataForm);
-          console.log(res);
-          if (res.code === 200) {
+          loading.value = true
+          const res = await AuthenticationApi.login(dataForm)
+          console.log('Response:', res)
 
+          if (res.code === 200) {
             localStorage.setItem('accessToken', res.data.accessToken)
             localStorage.setItem('refreshToken', res.data.refreshToken)
             authentication.isAuthentication(res.data)
@@ -89,8 +89,12 @@
           } else {
             AlertService.error('Login Fail!', res.message)
           }
-        } catch (error) {
-          AlertService.error('Login Fail!', 'Please again!')
+        } catch (error: any) {
+          console.error('Login error:', error)
+          const errorMessage = error?.response?.data?.message || error?.message || 'Please try again!'
+          AlertService.error('Login Fail!', errorMessage)
+        } finally {
+          loading.value = false
         }
       }
     })
@@ -103,7 +107,7 @@
   onMounted(async () => {
     const accessToken = AuthenticationSecurity.getAccessToken()
     if (accessToken) {
-      const res = await AuthenticationApi.isAuthentication(
+      const res = await AuthenticationApi.checkAuthentication(
           accessToken, TokenType.ACCESS_TOKEN)
       if (res) {
         redirectAfterLogin()

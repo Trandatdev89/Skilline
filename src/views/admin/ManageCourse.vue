@@ -21,26 +21,14 @@
           </template>
         </el-table-column>
         <el-table-column prop="price" label="Gia" />
-        <el-table-column prop="rate" label="Danh gia" />
-        <el-table-column prop="categoryId" label="Danh muc" />
-        <el-table-column prop="createdAt" label="Ngày tạo đơn" />
-        <el-table-column prop="updatedAt" label="Ngày cập nhập đơn" />
+        <el-table-column prop="categoryName" label="Danh muc" />
+        <el-table-column prop="createAt" label="Ngày tạo" />
+        <el-table-column prop="updateAt" label="Ngày cập nhập" />
         <el-table-column prop="status" label="Hanh dong">
           <template #default="scope">
             <el-button @click="updateCourse(scope.row)">
               <el-icon><RefreshLeft /></el-icon>
             </el-button>
-            <el-popconfirm
-                class="box-item"
-                title="Top Left prompts info"
-                placement="top-start"
-            >
-              <template #reference>
-                <el-button @click="deleteCourse(scope.row)" type="danger">
-                  <el-icon><Delete /></el-icon>
-                </el-button>
-              </template>
-            </el-popconfirm>
           </template>
         </el-table-column>
       </DataTable>
@@ -71,7 +59,7 @@
       </el-form-item>
       <el-form-item label-position="top" label="Danh muc" prop="categoryId">
         <el-select v-model="course.categoryId" multiple-limit="1">
-          <el-option v-for="item in listCate" :value="item.id">
+          <el-option v-for="item in listCate" :key="item.id" :value="item.id">
             {{ item.name }}
           </el-option>
         </el-select>
@@ -175,15 +163,6 @@
     course.categoryId = row.categoryId;
     course.thumbnail = row.thumbnail;
     createDialog.value?.show()
-  }
-
-  const deleteCourse = async (row:any)=>{
-     const res = await CourseApi.deleteCourse([row.id]);
-     if(res.code===200){
-       AlertService.success("Thanh cong","xoa san pham thanh cong")
-     }else{
-       AlertService.error("That bai","xoa san pham that bai")
-     }
   }
 
   function handleShowCreateCourse() {

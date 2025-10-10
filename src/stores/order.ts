@@ -13,7 +13,12 @@ const useOrderStore = defineStore("order-store",()=>{
     listOrder.total = totalAmount;
   }
 
-  return {listOrder,getListOrderNeedPayment};
+  const updateOrder = ()=>{
+    listOrder.order = [];
+    listOrder.total = 0;
+  }
+
+  return {listOrder,getListOrderNeedPayment,updateOrder};
 
 },{
   persist:true

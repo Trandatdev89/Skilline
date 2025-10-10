@@ -14,7 +14,7 @@
         <el-table-column prop="name" label="Tên danh mục"/>
         <el-table-column prop="path" label="Ảnh">
           <template #default="scope">
-            <img :src="scope.row.path" alt="image..."/>
+            <img :src="scope.row.urlThumbnail" alt="image..." style="width: 50px;height: 50px"/>
           </template>
         </el-table-column>
         <el-table-column prop="status" label="Hanh dong">
@@ -24,19 +24,6 @@
                 <RefreshLeft />
               </el-icon>
             </el-button>
-            <el-popconfirm
-              class="box-item"
-              title="Top Left prompts info"
-              placement="top-start"
-            >
-              <template #reference>
-                <el-button @click="deleteCategory(scope.row)" type="danger">
-                  <el-icon>
-                    <Delete />
-                  </el-icon>
-                </el-button>
-              </template>
-            </el-popconfirm>
           </template>
         </el-table-column>
       </DataTable>
@@ -119,14 +106,7 @@ const updateCategory = (row: any) => {
   createDialog.value?.show();
 }
 
-const deleteCategory = async (row: any) => {
-  const res = await CourseApi.deleteCourse([row.id])
-  if (res.code === 200) {
-    AlertService.success('Thanh cong', 'xoa san pham thanh cong')
-  } else {
-    AlertService.error('That bai', 'xoa san pham that bai')
-  }
-}
+
 
 function handleShowCreateCate() {
   createDialog.value?.show()

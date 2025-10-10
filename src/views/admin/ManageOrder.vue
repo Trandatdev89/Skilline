@@ -26,17 +26,6 @@
             <el-button @click="updateCourse(scope.row)">
               <el-icon><RefreshLeft /></el-icon>
             </el-button>
-            <el-popconfirm
-                class="box-item"
-                title="Top Left prompts info"
-                placement="top-start"
-            >
-              <template #reference>
-                <el-button @click="deleteCourse(scope.row)" type="danger">
-                  <el-icon><Delete /></el-icon>
-                </el-button>
-              </template>
-            </el-popconfirm>
           </template>
         </el-table-column>
       </DataTable>
@@ -174,14 +163,6 @@
     createDialog.value?.show()
   }
 
-  const deleteCourse = async (row:any)=>{
-    const res = await CourseApi.deleteCourse([row.id]);
-    if(res.code===200){
-      AlertService.success("Thanh cong","xoa san pham thanh cong")
-    }else{
-      AlertService.error("That bai","xoa san pham that bai")
-    }
-  }
 
   function handleShowCreateCourse() {
     createDialog.value?.show()

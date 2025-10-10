@@ -13,7 +13,8 @@ class AuthenticationApi{
     return response;
   }
 
-  async isAuthentication(accessToken:string,tokenType:string): Promise<ApiResponse<any>>{
+  async checkAuthentication(accessToken:string,tokenType:string): Promise<ApiResponse<any>>{
+    console.log('oke')
     const response : ApiResponse<any> = await httpApi.post(`/auth/introspect-token?tokenType=${tokenType}`,{accessToken},{
       headers:{
         'Content-Type':"application/json"
@@ -24,6 +25,10 @@ class AuthenticationApi{
 
   async logout(): Promise<ApiResponse<any>>{
     return await httpApi.get("/auth/logout");
+  }
+
+  async register(data:any): Promise<ApiResponse<any>>{
+    return await httpApi.post("/auth/register",data);
   }
 
 }

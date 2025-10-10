@@ -52,7 +52,7 @@
                 :icon="Delete"
                 circle
                 size="small"
-                @click="handleRemoveItem(index,item?.id)"
+                @click="handleRemoveItem(item.id)"
             />
           </div>
         </div>
@@ -98,8 +98,8 @@
     return listCourseInCart.value?.reduce((sum: any, item: any) => sum + (item.price || 0), 0) ?? 0
   })
 
-  const handleRemoveItem = (index: number, id: number) => {
-    handleSubCart([id])
+  const handleRemoveItem = (id: number) => {
+    handleSubCart(id)
   }
 
   const handlePayment = () => {

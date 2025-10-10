@@ -1,9 +1,9 @@
 <template>
-   <div class="category">
+   <div class="category" style="padding: 100px 0">
      <div class="container">
        <div class="category__main">
          <template v-for="item in listCategory" :key="item.id">
-           <CardUi img="https://images.pexels.com/photos/2049422/pexels-photo-2049422.jpeg"
+           <CardUi :img="item.urlThumbnail"
                    :title="item?.name" @click="handleNavigateCourse(item.id)"/>
          </template>
        </div>

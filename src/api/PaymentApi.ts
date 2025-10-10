@@ -3,8 +3,12 @@ import type { ApiResponse } from '@/type/ApiResponse.ts'
 
 class PaymentApi {
 
-  async vnPayment(params:  Record<string, any>): Promise<ApiResponse<any>> {
-    return await  httpApi.get("/api/payment",{ params })
+  async vnPayment(params:  any): Promise<ApiResponse<any>> {
+    const config = {
+      params: params ? params : {}
+    };
+    console.log(config);
+    return await  httpApi.get("/api/payment",config)
   }
 
 }

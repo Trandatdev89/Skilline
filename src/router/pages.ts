@@ -17,7 +17,7 @@ const Pages = {
     success : {name:'success',path:'/success'},
     category : {name:'category',path:'/category'},
     bought : {name:'bought',path:'/bought'},
-
+    blog: {name:'blog',path:'/blog'},
 
     //ADMIN:
     layoutAdmin:{name:'layout-admin',path:'/admin/dashboard'},

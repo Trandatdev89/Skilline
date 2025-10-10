@@ -13,10 +13,10 @@
           <div class="student-info-section">
             <h2 class="section-title">Thông tin học viên</h2>
 
-            <el-form :model="studentForm" ref="studentFormRef" :rules="rules" label-position="top">
-              <el-form-item label="Họ và tên *" prop="fullName">
+            <el-form :model="infoUser" ref="studentFormRef" :rules="rules" label-position="top">
+              <el-form-item label="Họ và tên *" prop="fullname">
                 <el-input
-                    v-model="studentForm.fullName"
+                    v-model="infoUser.fullname"
                     placeholder="Nhập họ và tên"
                     size="large"
                 />
@@ -24,7 +24,7 @@
 
               <el-form-item label="Số điện thoại *" prop="phone">
                 <el-input
-                    v-model="studentForm.phone"
+                    v-model="infoUser.phone"
                     placeholder="Nhập số điện thoại"
                     size="large"
                 />
@@ -32,7 +32,7 @@
 
               <el-form-item label="Email *" prop="email">
                 <el-input
-                    v-model="studentForm.email"
+                    v-model="infoUser.email"
                     placeholder="Nhập địa chỉ email"
                     size="large"
                 />
@@ -117,7 +117,7 @@
 </template>
 
 <script setup>
-  import { ref, reactive, watchEffect } from 'vue'
+  import { ref, reactive, watchEffect, onMounted } from 'vue'
   import { ElMessage } from 'element-plus'
   import { ArrowLeft, Ticket } from '@element-plus/icons-vue'
   import useOrderStore from '@/stores/order.js'
@@ -126,13 +126,7 @@
   import OrderApi from '@/api/OrderApi.js'
   import AlertService from '@/service/AlertService.js'
   import PaymentApi from '@/api/PaymentApi.js'
-
-  // Form data
-  const studentForm = reactive({
-    fullName: '',
-    phone: '',
-    email: ''
-  })
+  import UserApi from '@/api/UserApi.js'
 
   const orderStore = useOrderStore()
   const authenticationStore = useAuthentication()
@@ -144,14 +138,19 @@
     userId: userInfo.value.userId,
     totalPrice: listOrder.value.total,
     status: 'PAID',
-    courseId: listOrder.value.order?.map(item => Number(item.id))
+    courseId: listOrder.value.order?.map(item => Number(item?.id))
+  })
+
+  const infoUser = ref({
+    phone: '',
+    email: '',
+    fullname: ''
   })
 
   // Form validation rules
   const rules = {
     fullName: [
-      { required: true, message: 'Vui lòng nhập họ và tên', trigger: 'blur' },
-      { min: 2, message: 'Họ và tên phải có ít nhất 2 ký tự', trigger: 'blur' }
+      { required: true, message: 'Vui lòng nhập họ và tên', trigger: 'blur' }
     ],
     phone: [
       { required: true, message: 'Vui lòng nhập số điện thoại', trigger: 'blur' },
@@ -175,9 +174,13 @@
     try {
       paymentLoading.value = true
       const responseOrder = await OrderApi.saveOrder(orderReq)
+      orderStore.updateOrder();
       if (responseOrder.code === 200) {
-        const responsePaymentOnline = await PaymentApi.vnPayment(
-            `?orderId=${parseInt(responseOrder?.data.id)}&amount=${responseOrder?.data.totalPrice}&orderInfo=Nguời dùng có id ${responseOrder?.data.userId} chuyển khoản`)
+        const responsePaymentOnline = await PaymentApi.vnPayment({
+          'orderId': parseInt(responseOrder?.data.id),
+          'amount': responseOrder?.data.totalPrice,
+          'orderInfo': `Nguời dùng có id ${responseOrder?.data.userId} chuyển khoản`
+        })
         window.location.href = responsePaymentOnline?.url
       } else {
         AlertService.error('Thất bai!', 'Đơn hàng chưa được đặt')
@@ -188,9 +191,15 @@
     paymentLoading.value = false
   }
 
-  watchEffect(()=>{
-    console.log(userInfo,listOrder);
+  const getInfoUser = async () => {
+    const res = await UserApi.getInfo()
+    infoUser.value = res.data
+  }
+
+  onMounted(async () => {
+    await getInfoUser()
   })
+
 </script>
 
 <style lang="scss" scoped>

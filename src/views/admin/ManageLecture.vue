@@ -46,19 +46,6 @@
                 <RefreshLeft />
               </el-icon>
             </el-button>
-            <el-popconfirm
-                class="box-item"
-                title="Top Left prompts info"
-                placement="top-start"
-            >
-              <template #reference>
-                <el-button @click="deleteCourse(scope.row)" type="danger">
-                  <el-icon>
-                    <Delete />
-                  </el-icon>
-                </el-button>
-              </template>
-            </el-popconfirm>
           </template>
         </el-table-column>
       </DataTable>
@@ -73,9 +60,6 @@
         :rules="rules">
       <el-form-item label-position="top" label="Tieu de khoa hoc" prop="title">
         <el-input v-model="lecture.title" />
-      </el-form-item>
-      <el-form-item label-position="top" label="Vi tri" prop="position">
-        <el-input-number v-model="lecture.position" />
       </el-form-item>
       <el-form-item label-position="top" label="Video bai giang" prop="videoFile">
         <el-upload :auto-upload="false"
@@ -144,14 +128,6 @@
     createDialog.value?.show()
   }
 
-  const deleteCourse = async (row: any) => {
-    const res = await CourseApi.deleteCourse([row.id])
-    if (res.code === 200) {
-      AlertService.success('Thanh cong', 'xoa san pham thanh cong')
-    } else {
-      AlertService.error('That bai', 'xoa san pham that bai')
-    }
-  }
 
   function handleShowCreateCourse() {
     createDialog.value?.show()
@@ -166,7 +142,7 @@
         formData.append('id', lecture.id)
         formData.append('title', lecture.title)
         formData.append('courseId', lecture.courseId)
-        formData.append('position', lecture.position)
+
 
         if (lecture.videoFile) {
           formData.append('videoFile', lecture.videoFile)

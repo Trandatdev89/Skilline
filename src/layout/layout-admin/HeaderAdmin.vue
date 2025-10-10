@@ -6,7 +6,9 @@
       <div class="notification">
         <el-button :icon="Bell" style="font-size: 24px;border: none"/>
       </div>
-      <AvatarUser/>
+      <DropDownCustom avatar="https://static.vecteezy.com/system/resources/previews/002/002/403/non_2x/man-with-beard-avatar-character-isolated-icon-free-vector.jpg"
+                      :list-link="listLink"
+                      :title="userInfo.name"/>
     </div>
   </div>
 </template>
@@ -14,8 +16,33 @@
 <script setup lang="ts">
 
   import InputSearch from '@/components/input/InputSearch.vue'
-  import {Bell} from '@element-plus/icons-vue'
-  import AvatarUser from '@/components/avatar/AvatarUser.vue'
+  import { Bell } from '@element-plus/icons-vue'
+  import DropDownCustom from '@/components/dropdown/DropDownCustom.vue'
+  import { ref } from 'vue'
+  import { storeToRefs } from 'pinia'
+  import useAuthentication from '@/stores/Authentication.ts'
+
+  const listLink = ref<any>([
+    {
+      label: 'Trang chủ',
+      url: '/'
+    },
+    {
+      label: 'Khóa học đã mua',
+      url: '/bought'
+    },
+    {
+      label: 'Thông tin cá nhân',
+      url: '/info'
+    },
+    {
+      label: 'Đăng xuất',
+      url: '/logout'
+    }
+  ])
+
+  const { userInfo } = storeToRefs(useAuthentication())
+
 </script>
 
 <style scoped lang="scss">

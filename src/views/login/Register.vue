@@ -9,37 +9,37 @@
                 <div class="card-body p-md-5 text-black">
                   <h3 class="mb-5 text-uppercase" style="text-align: center;">Đăng ký</h3>
 
-                  <el-form ref="ruleFormRef" style="max-width: 600px" :model="ruleForm" status-icon :rules="rules"
+                  <el-form ref="ruleFormRef" style="max-width: 600px" :model="data" status-icon :rules="rules"
                            label-position="top" label-width="auto" class="demo-ruleForm" v-loading="loading">
                     <el-row :gutter="20">
                       <el-col :span="24">
                         <el-form-item label="Username" prop="username">
-                          <el-input v-model="ruleForm.username" />
+                          <el-input v-model="data.username" />
                         </el-form-item>
                       </el-col>
                       <el-col :span="24">
                         <el-form-item label="Password" prop="password">
-                          <el-input v-model="ruleForm.password" type="password" autocomplete="off" />
+                          <el-input v-model="data.password" type="password" autocomplete="off" />
                         </el-form-item>
                       </el-col>
                       <el-col :span="24">
                         <el-form-item label="Fullname" prop="fullname">
-                          <el-input v-model="ruleForm.fullname" />
+                          <el-input v-model="data.fullname" />
                         </el-form-item>
                       </el-col>
                       <el-col :span="24">
                         <el-form-item label="Phone" prop="phone">
-                          <el-input v-model="ruleForm.phone" />
+                          <el-input v-model="data.phone" />
                         </el-form-item>
                       </el-col>
                       <el-col :span="24">
                         <el-form-item label="Email" prop="email">
-                          <el-input v-model="ruleForm.email" type="email" />
+                          <el-input v-model="data.email" type="email" />
                         </el-form-item>
                       </el-col>
                       <el-col :span="24">
                         <el-form-item label="Address" prop="address">
-                          <el-input v-model="ruleForm.address" />
+                          <el-input v-model="data.address" />
                         </el-form-item>
                       </el-col>
 
@@ -69,13 +69,15 @@
 </template>
 
 <script setup lang="ts">
-  import { ElMessage, FormInstance, FormRules } from 'element-plus';
+  import { FormInstance } from 'element-plus'
   import { reactive, ref } from 'vue'
   // import { register } from '../services/AuthService'
   import { useRouter } from 'vue-router'
+  import AuthenticationApi from '@/api/AuthenticationApi.ts'
+  import AlertService from '@/service/AlertService.ts'
 
   const ruleFormRef = ref<FormInstance>() //Lay ra cai the form tuong ung trong vueJs
-  const ruleForm = reactive({
+  const data = reactive<any>({
     username: '',
     password: '',
     fullname: '',
@@ -85,17 +87,19 @@
   })
   const router = useRouter()
   const loading = ref<boolean>(false)
-  const rules = reactive<FormRules<typeof ruleForm>>({
+  const rules = reactive<any>({
     username: [
       { required: true, message: 'Please input Username', trigger: 'blur' },
       { min: 3, max: 12, message: 'Length should be 3 to 5', trigger: 'blur' }
     ],
     password: [{ required: true, message: 'Please input Password', trigger: 'blur' }],
     phone: [
-      { required: true, message: 'Please input phone', trigger: 'blur' }
+      { required: true, message: 'Please input phone', trigger: 'blur' },
+      { pattern: /^[0-9]{10,11}$/, message: 'Số điện thoại không hợp lệ', trigger: 'blur' }
     ],
     email: [
-      { required: true, message: 'Please input email', trigger: 'blur' }
+      { required: true, message: 'Please input email', trigger: 'blur' },
+      { type: 'email', message: 'Email không hợp lệ', trigger: 'blur' }
     ],
     address: [
       { required: true, message: 'Please input Address', trigger: 'blur' }
@@ -106,24 +110,36 @@
   })
 
   const submitForm = (formEl: FormInstance | undefined) => {
-    // if (!formEl) {
-    //   return
-    // }
-    // formEl.validate(async (valid) => {
-    //   if (valid) {
-    //     loading.value = true
-    //     const result = await register('auth/register', ruleForm)
-    //     if (result.code === 200) {
-    //       loading.value = false
-    //       router.push('/login')
-    //       ElMessage.success(`${result?.message}`)
-    //     } else {
-    //       loading.value = false
-    //       ElMessage.error(`${result?.message}.Hay thu lai nhe`)
-    //     }
-    //   }
-    // })
+    if (!formEl) {
+      return
+    }
+
+    formEl.validate(async (valid) => {
+      if (valid) {
+        try {
+          loading.value = true
+          const result = await AuthenticationApi.register(data)
+          console.log('Response:', result)
+
+          if (result.code === 200) {
+            AlertService.success('Thanh cong', 'Xac thuc tai khoan qua email!')
+            router.push('/login')
+          } else {
+            AlertService.error('That bai', result.message)
+          }
+        } catch (error: any) {
+          console.error('Register error:', error)
+          const errorMessage = error?.response?.data?.message || error?.message || 'Vui long thu lai!'
+          AlertService.error('That bai', errorMessage)
+        } finally {
+          loading.value = false
+        }
+      } else {
+        AlertService.error('That bai', 'Validation that bai')
+      }
+    })
   }
+
 
 </script>
 

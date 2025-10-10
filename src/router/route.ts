@@ -40,7 +40,7 @@ const router = createRouter({
           component: HomeView,
         },
         {
-          ...Pages.about,
+          ...Pages.blog,
           component: About,
         },
         {
