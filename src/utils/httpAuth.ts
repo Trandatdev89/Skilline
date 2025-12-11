@@ -12,13 +12,6 @@ const createApiRequest = (baseUrl: any): AxiosInstance => {
     }
   })
 
-  request.interceptors.response.use((response: any) => {
-    return response.data
-  }, async (error) => {
-    return Promise.reject(error)
-  })
-
-
   request.interceptors.request.use((config: any) => {
     const accessToken = localStorage.getItem('accessToken')
     if (accessToken !== null && accessToken !== '') {
@@ -37,5 +30,5 @@ const createApiRequest = (baseUrl: any): AxiosInstance => {
   return request
 }
 
-const httpApi = createApiRequest('http://localhost:8080')
-export { httpApi }
+const httpAuth = createApiRequest('http://localhost:8080')
+export { httpAuth }

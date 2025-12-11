@@ -3,29 +3,26 @@
 </template>
 
 <script lang="ts" setup>
-  import { onMounted, ref } from 'vue'
-  import AuthenticationApi from '@/api/AuthenticationApi.ts'
-  import useAuthentication from '@/stores/Authentication.ts'
-  import AlertService from '@/service/AlertService.ts'
-  import { useRouter } from 'vue-router'
+import { onMounted } from 'vue'
+import useAuthentication from '@/stores/Authentication.ts'
+import AlertService from '@/service/AlertService.ts'
+import { useRouter } from 'vue-router'
+import UserApi from '@/api/UserApi.ts'
 
-  const loading = ref(false)
-  const router = useRouter()
+const router = useRouter()
   const authentication = useAuthentication()
+  const loading = authentication.isLoading;
 
   const logoutAccount = async () => {
-    loading.value = true
-    const res = await AuthenticationApi.logout()
+    const res = await UserApi.logout()
     if (res.code === 200) {
       authentication.logout()
-      router.push('/login')
+      await router.push('/login')
       AlertService.success('Thành công', 'Đăng xuất thành công')
     } else {
       AlertService.error('Thất bại', 'Đăng xuất thất bại')
     }
-    loading.value = false
   }
-
 
   onMounted(async () => {
     await logoutAccount()

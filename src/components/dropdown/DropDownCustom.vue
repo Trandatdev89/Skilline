@@ -37,8 +37,6 @@
     listLink: { label: string; url: string;}[]
   }>()
 
-  console.log(role);
-
 </script>
 
 <style scoped lang="scss">

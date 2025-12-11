@@ -50,6 +50,7 @@
   import pages from '@/router/pages.ts'
   import AuthenticationSecurity from '@/security/AuthenticationSecurity.ts'
   import { TokenType } from '@/enums/TokenType.ts'
+  import useRedirect from '@/composable/useRedirect.ts'
 
   const ruleFormRef = ref<FormInstance>()
   const ruleForm = reactive<FormRules>({
@@ -62,7 +63,7 @@
   })
   const loading = ref<boolean>(false)
   const authentication = useAuthentication()
-  const router = useRouter()
+  const redirect = useRedirect();
   const dataForm = reactive({
     username: '',
     password: ''
@@ -81,9 +82,7 @@
           console.log('Response:', res)
 
           if (res.code === 200) {
-            localStorage.setItem('accessToken', res.data.accessToken)
-            localStorage.setItem('refreshToken', res.data.refreshToken)
-            authentication.isAuthentication(res.data)
+            authentication.setAuthToken(res.data)
             redirectAfterLogin()
             AlertService.success('Login Success!', res.message)
           } else {
@@ -101,14 +100,13 @@
   }
 
   const redirectAfterLogin = () => {
-    router.push(pages.redirect)
+    redirect.handleRedirect();
   }
 
   onMounted(async () => {
     const accessToken = AuthenticationSecurity.getAccessToken()
     if (accessToken) {
-      const res = await AuthenticationApi.checkAuthentication(
-          accessToken, TokenType.ACCESS_TOKEN)
+      const res = await authentication.isAuthentication();
       if (res) {
         redirectAfterLogin()
       }

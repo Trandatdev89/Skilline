@@ -19,7 +19,7 @@
             <RouterLink to="/category">Category</RouterLink>
           </div>
         </div>
-        <div class="header__auth header__auth--dropdown" v-if="userInfo.isAuthentication"
+        <div class="header__auth header__auth--dropdown" v-if="userInfo.isAuthenticated"
              style="display: flex;align-items: center;">
           <DropDownCustom :title="userInfo.name"
                           :list-link="listLink"

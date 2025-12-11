@@ -1,11 +1,10 @@
-import { jwtDecode } from 'jwt-decode'
+import useAuthentication from '@/stores/Authentication.ts'
 
 export const getRole = ()=>{
   let role;
   const accessToken = localStorage.getItem("accessToken");
   if(accessToken){
-    const tokenDecode = jwtDecode<any>(accessToken);
-    role = tokenDecode?.scope;
+    role = useAuthentication().userInfo;
   }
   return role || "NOT_ROlE";
 }

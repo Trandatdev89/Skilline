@@ -7,13 +7,10 @@ import Pages from '@/router/pages.ts'
 import pages from '@/router/pages.ts'
 import Login from '@/views/login/Login.vue'
 import Post from '@/views/Post.vue'
-import Redirect from '@/redirect/Redirect.vue'
 import AuthenticationSecurity from '@/security/AuthenticationSecurity.ts'
-import { jwtDecode } from 'jwt-decode'
 import Fobiden from '@/views/errorPage/Fobiden.vue'
 import Course from '@/views/Course.vue'
 import Lecture from '@/views/Lecture.vue'
-import Order from '@/views/Order.vue'
 import Cart from '@/views/Cart.vue'
 import Register from '@/views/login/Register.vue'
 import Dashboard from '@/views/admin/Dashboard.vue'
@@ -27,6 +24,8 @@ import Setting from '@/views/admin/Setting.vue'
 import ManageLecture from '@/views/admin/ManageLecture.vue'
 import ManageCategory from '@/views/ManageCategory.vue'
 import Bought from '@/views/Bought.vue'
+import Order from '@/views/Order.vue'
+import useAuthentication from '@/stores/Authentication.ts'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -37,30 +36,30 @@ const router = createRouter({
       children: [
         {
           ...Pages.home,
-          component: HomeView,
+          component: HomeView
         },
         {
           ...Pages.blog,
-          component: About,
+          component: About
         },
         {
           ...Pages.fobiden,
-          component: Fobiden,
+          component: Fobiden
         },
         {
           ...Pages.success,
-          component: Success,
+          component: Success
         },
         {
           ...Pages.category,
-          component: Category,
+          component: Category
         },
         {
           ...Pages.logout,
           component: Logout,
           meta: {
             requireAuth: true,
-            roles:["ADMIN","USER"]
+            roles: ['ADMIN', 'USER']
           }
         },
         {
@@ -92,14 +91,6 @@ const router = createRouter({
           component: Cart
         },
         {
-          ...Pages.redirect,
-          component: Redirect,
-          meta: {
-            requireAuth: true,
-            roles:["ADMIN","USER"]
-          }
-        },
-        {
           ...Pages.post,
           component: Post
         }
@@ -110,9 +101,9 @@ const router = createRouter({
       component: LayoutAdmin,
       meta: {
         requireAuth: true,
-        roles:["ADMIN"]
+        roles: ['ADMIN']
       },
-      children:[
+      children: [
         {
           ...Pages.dashboard,
           component: Dashboard
@@ -144,19 +135,17 @@ const router = createRouter({
       ]
     }
   ]
-});
+})
 
 router.beforeEach((to, from, next) => {
-  const accessToken = AuthenticationSecurity.getAccessToken();
-  console.log(accessToken);
-  // Kiểm tra route có cần authentication không
+  const accessToken = AuthenticationSecurity.getAccessToken()
+  const userInfo = useAuthentication().userInfo
   if (to.matched.some(item => item.meta.requireAuth)) {
     if (!accessToken) {
       return next(pages.login.path)
     }
     try {
-      const tokenDecode = jwtDecode<any>(accessToken)
-      const role = tokenDecode?.scope
+      const role = userInfo.role
       if (!role) {
         return next(pages.login.path)
       }
@@ -169,9 +158,8 @@ router.beforeEach((to, from, next) => {
     }
 
   }
-  next();
+  return next()
 })
-
 
 
 export default router

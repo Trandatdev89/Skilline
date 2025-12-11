@@ -1,4 +1,4 @@
-import { httpApi } from '@/utils/http-api.ts'
+import { httpAuth } from '@/utils/httpAuth.ts'
 import type { ApiResponse } from '@/type/ApiResponse.ts'
 
 class PaymentApi {
@@ -8,7 +8,7 @@ class PaymentApi {
       params: params ? params : {}
     };
     console.log(config);
-    return await  httpApi.get("/api/payment",config)
+    return await  httpAuth.get("/api/payment",config)
   }
 
 }

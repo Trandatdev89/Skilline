@@ -1,20 +1,23 @@
 import type { ApiResponse } from '@/type/ApiResponse.ts'
-import { httpApi } from '@/utils/http-api.ts'
+import { httpAuth } from '@/utils/httpAuth.ts'
 
 class CategoryApi {
+
+  private SUFFIX_URL = '/api/category';
+
   async getListCategory(): Promise<ApiResponse<any>> {
-    return await httpApi.get(`/api/category`);
+    return await httpAuth.get(this.SUFFIX_URL);
   }
 
   async getListCategoryPagination(params:any): Promise<ApiResponse<any>> {
     const config = {
       params: params ? params : {}
     };
-    return await httpApi.get(`/api/category/pagination`,config);
+    return await httpAuth.get(`${this.SUFFIX_URL}/pagination`,config);
   }
 
   async save(data:any): Promise<ApiResponse<any>> {
-    return await httpApi.post(`/api/category`,data);
+    return await httpAuth.post(this.SUFFIX_URL,data);
   }
 }
 
