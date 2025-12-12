@@ -1,5 +1,6 @@
 import type { ApiResponse } from '@/type/ApiResponse.ts'
 import { httpAuth } from '@/utils/httpAuth.ts'
+import { httpApi } from '@/utils/httpApi.ts'
 
 class CategoryApi {
 
@@ -13,7 +14,7 @@ class CategoryApi {
     const config = {
       params: params ? params : {}
     };
-    return await httpAuth.get(`${this.SUFFIX_URL}/pagination`,config);
+    return await httpApi.get(`${this.SUFFIX_URL}/pagination`,config);
   }
 
   async save(data:any): Promise<ApiResponse<any>> {

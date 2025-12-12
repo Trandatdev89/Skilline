@@ -7,18 +7,14 @@ class OrderApi {
     const config = {
       params: params ? params : {}
     };
-    const res : ApiResponse<any> = await  httpAuth.get("/api/order",config)
-    return res;
+    return await  httpAuth.get("/api/order",config)
   }
 
   async saveOrder(data: any): Promise<ApiResponse<any>> {
-    const res : ApiResponse<any> = await  httpAuth.post("/api/order",data)
-    console.log(res);
-    return res;
+    return await  httpAuth.post("/api/order",data)
   }
 
 }
-
 
 const orderApi = new OrderApi()
 export default orderApi

@@ -7,7 +7,6 @@ class PaymentApi {
     const config = {
       params: params ? params : {}
     };
-    console.log(config);
     return await  httpAuth.get("/api/payment",config)
   }
 

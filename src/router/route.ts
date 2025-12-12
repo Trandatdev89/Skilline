@@ -27,6 +27,7 @@ import Bought from '@/views/Bought.vue'
 import Order from '@/views/Order.vue'
 import useAuthentication from '@/stores/Authentication.ts'
 
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -137,13 +138,17 @@ const router = createRouter({
   ]
 })
 
-router.beforeEach((to, from, next) => {
-  const accessToken = AuthenticationSecurity.getAccessToken()
+router.beforeEach(async (to, from, next) => {
   const userInfo = useAuthentication().userInfo
   if (to.matched.some(item => item.meta.requireAuth)) {
-    if (!accessToken) {
+
+    const authStore = useAuthentication();
+    const isAuth = await authStore.isAuthentication()
+
+    if (!isAuth) {
       return next(pages.login.path)
     }
+
     try {
       const role = userInfo.role
       if (!role) {

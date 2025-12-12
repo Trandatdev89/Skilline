@@ -1,5 +1,7 @@
 import type { AxiosInstance } from 'axios'
 import axios from 'axios'
+import AuthenticationSecurity from '@/security/AuthenticationSecurity.ts'
+import { TokenType } from '@/enums/TokenType.ts'
 
 
 const timeOut = 1000 * 60 * 5
@@ -26,9 +28,25 @@ const createApiRequest = (baseUrl: any): AxiosInstance => {
     return Promise.reject(error)
   });
 
+  request.interceptors.response.use((response:any)=> {
+    return response.data;
+  },async (error)=>{
+    if(error && error.response.status===401){
+      const refreshToken = AuthenticationSecurity.getRefreshToken();
+      const response = await axios.post("http://localhost:8080/auth/refresh",{
+        refreshToken: refreshToken, tokenType: TokenType.REFRESH_TOKEN
+      });
+
+      const {accessToken} = response.data;
+
+      AuthenticationSecurity.setAccessToken(accessToken);
+    }
+    return Promise.reject(error);
+  })
+
 
   return request
 }
 
-const httpAuth = createApiRequest('http://localhost:8080')
+const httpAuth = createApiRequest(import.meta.env.VITE_API_LOCAL)
 export { httpAuth }
