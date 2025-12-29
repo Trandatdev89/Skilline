@@ -112,7 +112,7 @@
 <style lang="scss" scoped>
   .leftMenu {
     width: 290px;
-    height: 100vh;
+    height: 100%;
     background: #fff;
     display: flex;
     flex-direction: column;

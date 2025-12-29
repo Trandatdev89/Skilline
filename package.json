@@ -12,12 +12,14 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
+    "@stomp/stompjs": "^7.2.1",
     "axios": "^1.12.1",
     "chart.js": "^4.5.0",
     "element-plus": "^2.11.2",
     "jwt-decode": "^4.0.0",
     "pinia": "^3.0.3",
     "pinia-plugin-persistedstate": "^4.5.0",
+    "sockjs-client": "^1.6.1",
     "video.js": "^8.23.4",
     "vue": "^3.5.17",
     "vue-router": "^4.5.1"
@@ -25,6 +27,7 @@
   "devDependencies": {
     "@tsconfig/node22": "^22.0.2",
     "@types/node": "^22.15.32",
+    "@types/sockjs-client": "^1.5.4",
     "@vitejs/plugin-vue": "^6.0.0",
     "@vue/tsconfig": "^0.7.0",
     "npm-run-all2": "^8.0.4",

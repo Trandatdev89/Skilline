@@ -13,7 +13,6 @@ const createApiRequest = (baseUrl: string) => {
   request.interceptors.request.use((config: any) => {
     config.headers = {
       ...config.headers,
-      'Content-Type': 'application/json'
     }
     return config
   }, (error) => {
@@ -37,4 +36,4 @@ const createApiRequest = (baseUrl: string) => {
 
 }
 
-export const httpApi = createApiRequest(import.meta.env.VITE_API_LOCAL);
+export const httpApi = createApiRequest("http://localhost:8080");

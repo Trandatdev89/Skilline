@@ -143,7 +143,7 @@ router.beforeEach(async (to, from, next) => {
   if (to.matched.some(item => item.meta.requireAuth)) {
 
     const authStore = useAuthentication();
-    const isAuth = await authStore.isAuthentication()
+    const isAuth = await authStore.isAuthentication();
 
     if (!isAuth) {
       return next(pages.login.path)

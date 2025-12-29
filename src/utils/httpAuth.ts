@@ -48,5 +48,5 @@ const createApiRequest = (baseUrl: any): AxiosInstance => {
   return request
 }
 
-const httpAuth = createApiRequest(import.meta.env.VITE_API_LOCAL)
+const httpAuth = createApiRequest("http://localhost:8080")
 export { httpAuth }

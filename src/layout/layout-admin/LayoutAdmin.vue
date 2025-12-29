@@ -8,7 +8,7 @@
         <el-header>
           <HeaderAdmin/>
         </el-header>
-        <el-main>
+        <el-main style="padding: 0 !important;">
           <router-view/>
         </el-main>
       </el-container>
