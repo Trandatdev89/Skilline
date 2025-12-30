@@ -2,6 +2,7 @@ import type { AxiosInstance } from 'axios'
 import axios from 'axios'
 import AuthenticationSecurity from '@/security/AuthenticationSecurity.ts'
 import { TokenType } from '@/enums/TokenType.ts'
+import AlertService from '@/service/AlertService.ts'
 
 
 const timeOut = 1000 * 60 * 5
@@ -40,6 +41,8 @@ const createApiRequest = (baseUrl: any): AxiosInstance => {
       const {accessToken} = response.data;
 
       AuthenticationSecurity.setAccessToken(accessToken);
+    }else if(error && error.response.status===423){
+      AlertService.error("Error","Account is login from device other");
     }
     return Promise.reject(error);
   })

@@ -11,8 +11,16 @@ const createApiRequest = (baseUrl: string) => {
   })
 
   request.interceptors.request.use((config: any) => {
+
+    const deviceFingerprint = localStorage.getItem('deviceFingerprint');
+    if (deviceFingerprint) {
+      config.headers['X-Device-Fingerprint'] = deviceFingerprint;
+    }
+
     config.headers = {
       ...config.headers,
+      'content-type':'application/json',
+      "accept":'application/json'
     }
     return config
   }, (error) => {

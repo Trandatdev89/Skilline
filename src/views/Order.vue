@@ -179,7 +179,8 @@
         const responsePaymentOnline = await PaymentApi.vnPayment({
           'orderId': parseInt(responseOrder?.data.id),
           'amount': responseOrder?.data.totalPrice,
-          'orderInfo': `Nguời dùng có id ${responseOrder?.data.userId} chuyển khoản`
+          'userId': responseOrder?.data.userId,
+          'courses':orderReq.courseId
         })
         window.location.href = responsePaymentOnline?.url
       } else {

@@ -11,7 +11,7 @@ class CategoryApi {
   }
 
   async getListCategoryPagination(params:any): Promise<ApiResponse<any>> {
-    const res:any =  await httpApi.get(`${this.SUFFIX_URL}/pagination`, {
+    const res :  ApiResponse<any> =  await httpApi.get(`${this.SUFFIX_URL}/pagination`, {
       params: params || {}
     });
     return res;

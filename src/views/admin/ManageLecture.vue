@@ -135,18 +135,16 @@
 
   const handleCreateLecture = () => {
     loading.value = true
+    const formData = new FormData();
     createCourseForm.value?.validate(async (valid) => {
       if (valid) {
-        const formData = new FormData()
 
-        formData.append('id', lecture.id)
-        formData.append('title', lecture.title)
-        formData.append('courseId', lecture.courseId)
-
-
-        if (lecture.videoFile) {
-          formData.append('videoFile', lecture.videoFile)
-        }
+        Object.keys(lecture).forEach((key) => {
+          let data = lecture[key as keyof typeof lecture];
+          if (data) {
+            formData.append(key, data);
+          }
+        });
 
         const res = await LectureApi.saveLecturesByCourseId(formData)
         listLectureByIdCourse.value.push(res.data)
