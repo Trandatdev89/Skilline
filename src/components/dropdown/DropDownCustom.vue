@@ -4,19 +4,14 @@
     <span class="dropdownCustom__info">
       <div style="font-size: 20px;font-weight: 500;color: #000000">{{ props.title }}</div>
       <div class="dropdownCustom__avatar">
-        <img alt="Avatar..." :src="props.avatar" />
+        <img v-if="props.avatar" alt="Avatar..." :src="props.avatar" />
       </div>
     </span>
       <template #dropdown>
         <el-dropdown-menu>
-          <el-dropdown-item v-if="role==='ADMIN'">
-            <RouterLink to="/admin/dashboard">
-              Trang quản lý
-            </RouterLink>
-          </el-dropdown-item>
-          <el-dropdown-item v-for="(item,index) in props.listLink" :key="index">
+          <el-dropdown-item v-for="(item,index) in filterLinks" :key="index">
             <RouterLink :to="item.url">
-              {{ item.label }}
+              {{ item.title }}
             </RouterLink>
           </el-dropdown-item>
         </el-dropdown-menu>
@@ -27,15 +22,38 @@
 
 <script setup lang="ts">
 
-  import { getRole } from '@/security/getRole.ts'
+  import useAuthentication from '@/stores/Authentication.ts'
+  import type { RoleType } from '@/enums/RoleType.ts'
+  import { computed } from 'vue'
 
-  const role = getRole();
+  const role = useAuthentication().userInfo.role;
 
   const props = defineProps<{
-    title: string,
-    avatar: string,
-    listLink: { label: string; url: string;}[]
-  }>()
+    title?: string,
+    avatar?: string,
+    listLink?: {
+      title: string;
+      url: string;
+      role?:RoleType | RoleType[]
+    }[],
+  }>();
+
+  const filterLinks = computed(()=>{
+    if(!props.listLink){
+      return [];
+    }
+
+    return props.listLink.filter((item)=>{
+
+        if(Array.isArray(item.role)){
+          return item.role.includes(<RoleType>role.toString());
+        }
+
+        return item.role === <RoleType>role.toString();
+    })
+  });
+
+
 
 </script>
 

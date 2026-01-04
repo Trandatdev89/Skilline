@@ -75,6 +75,7 @@
   import { useRouter } from 'vue-router'
   import AuthenticationApi from '@/api/AuthenticationApi.ts'
   import AlertService from '@/service/AlertService.ts'
+  import { RoleType } from '@/enums/RoleType.ts'
 
   const ruleFormRef = ref<FormInstance>() //Lay ra cai the form tuong ung trong vueJs
   const data = reactive<any>({
@@ -83,8 +84,10 @@
     fullname: '',
     phone: '',
     email: '',
-    address: ''
-  })
+    address: '',
+    role:RoleType.TEACHER
+  });
+
   const router = useRouter()
   const loading = ref<boolean>(false)
   const rules = reactive<any>({
@@ -139,7 +142,6 @@
       }
     })
   }
-
 
 </script>
 

@@ -102,7 +102,7 @@ const router = createRouter({
       component: LayoutAdmin,
       meta: {
         requireAuth: true,
-        roles: ['ADMIN']
+        roles: ['ADMIN','TEACHER']
       },
       children: [
         {

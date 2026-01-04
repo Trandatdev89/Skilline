@@ -21,25 +21,30 @@
   import { ref } from 'vue'
   import { storeToRefs } from 'pinia'
   import useAuthentication from '@/stores/Authentication.ts'
+  import { RoleType } from '@/enums/RoleType.ts'
 
   const listLink = ref<any>([
     {
-      label: 'Trang chủ',
-      url: '/'
+      label: 'Trang quản lý',
+      url: '/admin/dashboard',
+      role:[RoleType.ADMIN,RoleType.TEACHER]
     },
     {
       label: 'Khóa học đã mua',
-      url: '/bought'
+      url: '/bought',
+      role:RoleType.USER
     },
     {
       label: 'Thông tin cá nhân',
-      url: '/info'
+      url: '/info',
+      role:[RoleType.USER,RoleType.ADMIN,RoleType.TEACHER]
     },
     {
       label: 'Đăng xuất',
-      url: '/logout'
+      url: '/logout',
+      role:[RoleType.USER,RoleType.ADMIN,RoleType.TEACHER]
     }
-  ])
+  ]);
 
   const { userInfo } = storeToRefs(useAuthentication())
 

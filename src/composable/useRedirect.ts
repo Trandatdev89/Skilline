@@ -9,7 +9,7 @@ const useRedirect = ()=>{
 
   const handleRedirect = async ()=>{
     const role = userInfo.role;
-    if (role === 'ADMIN') {
+    if (role === 'ADMIN' || role === 'TEACHER') {
       await redirectAdmin()
     } else {
       await redirectUser()

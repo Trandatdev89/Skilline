@@ -16,21 +16,31 @@
             <RouterLink to="/blog">Blog</RouterLink>
           </div>
           <div class="header__item">
-            <RouterLink to="/category">Category</RouterLink>
+            <DropDownCategory
+                @load-more="getCategories"
+                :title="'Category'"
+                            :list-item="listCategory"/>
           </div>
         </div>
         <div class="header__auth header__auth--dropdown" v-if="userInfo.isAuthenticated"
              style="display: flex;align-items: center;">
           <DropDownCustom :title="userInfo.name"
                           :list-link="listLink"
-                          avatar="https://static.vecteezy.com/system/resources/previews/002/002/403/non_2x/man-with-beard-avatar-character-isolated-icon-free-vector.jpg" />
+                          :role="userInfo.role"
+                          avatar="https://static.vecteezy.com/system/resources/previews/002/002/403/non_2x/man-with-beard-avatar-character-isolated-icon-free-vector.jpg"/>
           <RouterLink to="/cart">
             <el-badge :value="listCourse.length" class="item">
               <el-icon style="font-size: 24px;color: #000000">
-                <ShoppingCart />
+                <ShoppingCart/>
               </el-icon>
             </el-badge>
           </RouterLink>
+          <div class="notification" @click="subscribeNotification">
+            <el-button :icon="Bell" style="font-size: 24px;border: none;background-color: transparent"/>
+          </div>
+          <div class="notification" @click="sendPushNoti">
+            <el-button :icon="Bell" style="font-size: 24px;border: none;background-color: transparent"/>
+          </div>
         </div>
         <div class="header__auth" v-else>
           <RouterLink to="/login" class="btn btn--primary">
@@ -44,16 +54,25 @@
           <i class="fa-solid fa-bars" @click="handleShowBar"></i>
         </div>
         <div :class="['dropdown', { show: isShow }]">
-          <ul class="dropdown__item"><a href="/public">Home</a></ul>
-          <ul class="dropdown__item"><a href="/public">Careers</a></ul>
-          <ul class="dropdown__item"><a href="/public">Blog</a></ul>
-          <ul class="dropdown__item"><a href="/public">About Us</a></ul>
+          <ul class="dropdown__item">
+            <a href="/public">Home</a>
+          </ul>
+          <ul class="dropdown__item">
+            <a href="/public">Careers</a>
+          </ul>
+          <ul class="dropdown__item">
+            <a href="/public">Blog</a>
+          </ul>
+          <ul class="dropdown__item">
+            <a href="/public">About Us</a>
+          </ul>
         </div>
       </div>
       <div class="header__banner" v-if="router.path==='/'">
         <div class="header__content">
           <div class="header__title">
-            <span>Studying</span> Online is now much easier
+            <span>Studying</span>
+            Online is now much easier
           </div>
           <div class="header__desc">
             Skilline is an interesting platform that will teach you in more an interactive way
@@ -80,40 +99,96 @@
 
 <script lang="ts" setup>
 
-  import { ShoppingCart } from '@element-plus/icons-vue'
+  import { Bell, ShoppingCart } from '@element-plus/icons-vue'
   import logo from '@/assets/img/logo.png'
   import girl from '@/assets/img/header-pic.png'
-  import { ref } from 'vue'
+  import { onMounted, ref } from 'vue'
   import { RouterLink, useRoute } from 'vue-router'
   import useAuthentication from '@/stores/Authentication.ts'
   import DropDownCustom from '@/components/dropdown/DropDownCustom.vue'
   import { storeToRefs } from 'pinia'
   import useCartStore from '@/stores/cart.ts'
+  import usePushNotification from '@/composable/usePushNotification.ts'
+  import AlertService from '@/service/AlertService.ts'
+  import axios from 'axios'
+  import { RoleType } from '@/enums/RoleType.ts'
+  import useLoadMore from '@/composable/useLoadMore.ts'
+  import CategoryApi from '@/api/CategoryApi.ts'
+  import DropDownCategory from '@/components/dropdown/DropDownCategory.vue'
 
   const isShow = ref<boolean>(false)
   const router = useRoute()
-  const {listCourse} = storeToRefs(useCartStore());
+  const { listCourse } = storeToRefs(useCartStore())
+  const userId = useAuthentication().userInfo.userId
 
   const handleShowBar = () => {
     isShow.value = !isShow.value
   }
 
+  const {
+    isSupport,
+    isSubscribed,
+    subscription,
+    checkSupport,
+    subscribeToPush
+  } = usePushNotification()
+
+  const { loadMoreData, data, request } = useLoadMore()
+
+  const subscribeNotification = async () => {
+    await subscribeToPush(Number(userId))
+    AlertService.success('Thanh cong', 'Dang ky nhan thong bao thanh cong!')
+  }
+
+  const sendPushNoti = async () => {
+    await axios.post('http://localhost:8080/api/push/send', null, {
+      params: {
+        userId: userId,
+        title: 'Test Notification',
+        body: 'Đây là thông báo test từ Vue.js + Spring Boot!'
+      }
+    })
+  }
+
   const listLink = ref<any>([
     {
-      label: 'Khóa học đã mua',
-      url: '/bought'
+      title: 'Trang quản lý',
+      url: '/admin/dashboard',
+      role: [RoleType.ADMIN, RoleType.TEACHER]
     },
     {
-      label: 'Thông tin cá nhân',
-      url: '/info'
+      title: 'Khóa học đã mua',
+      url: '/bought',
+      role: RoleType.USER
     },
     {
-      label: 'Đăng xuất',
-      url: '/logout'
+      title: 'Thông tin cá nhân',
+      url: '/info',
+      role: [RoleType.USER, RoleType.ADMIN, RoleType.TEACHER]
+    },
+    {
+      title: 'Đăng xuất',
+      url: '/logout',
+      role: [RoleType.USER, RoleType.ADMIN, RoleType.TEACHER]
     }
   ])
 
+  const listCategory =  ref<any>([]);
+
   const { userInfo } = storeToRefs(useAuthentication())
+
+  onMounted(() => {
+    checkSupport();
+    getCategories();
+  })
+
+  const getCategories = async () => {
+    await loadMoreData(() => CategoryApi.getListCategoryPagination(request));
+    listCategory.value = data.value;
+    console.log(listCategory.value);
+  }
+
+
 
 </script>
 

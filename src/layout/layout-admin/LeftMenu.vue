@@ -14,82 +14,20 @@
                default-active="1"
                @open="handleOpen"
       >
-        <el-sub-menu index="1">
-          <template #title>
-            <el-icon>
-              <Menu />
-            </el-icon>
-            <span><RouterLink to="/admin/dashboard">
-                Trang quản lý
-              </RouterLink></span>
-          </template>
-          <el-menu-item index="1-1">Item 1</el-menu-item>
-          <el-menu-item index="1-2">Item 2</el-menu-item>
-          <el-menu-item index="1-3">Item 3</el-menu-item>
-        </el-sub-menu>
-        <el-menu-item index="10">
-          <template #title>
-            <el-icon>
-              <Monitor />
-            </el-icon>
-            <span>
-              <RouterLink to="/admin/category">
-                Quản lý danh muc
-              </RouterLink>
+        <template  v-for="(menu) in listMenu">
+          <el-menu-item :index="menu.id" v-if="menu.role.includes(<RoleType>role)">
+            <template #title>
+              <el-icon>
+                <component :is="menu.icon"/>
+              </el-icon>
+              <span>
+                <RouterLink :to="menu.link">
+                  {{menu.title}}
+                </RouterLink>
               </span>
-          </template>
-        </el-menu-item>
-        <el-sub-menu index="2">
-          <template #title>
-            <el-icon>
-              <Monitor />
-            </el-icon>
-            <span>
-              <RouterLink to="/admin/courses">
-                Quản lý khóa học
-              </RouterLink>
-              </span>
-          </template>
-        </el-sub-menu>
-        <el-sub-menu index="3">
-          <template #title>
-            <el-icon>
-              <Tickets />
-            </el-icon>
-            <span>
-              <RouterLink to="/admin/order">
-                Quản lý đơn hàng
-              </RouterLink>
-            </span>
-          </template>
-          <el-menu-item>Item 5</el-menu-item>
-          <el-menu-item>Item 6</el-menu-item>
-        </el-sub-menu>
-        <el-menu-item index="4">
-          <template #title>
-            <el-icon>
-              <Tickets />
-            </el-icon>
-            <span>
-              <RouterLink to="/admin/lecture">
-                Quản lý bai học
-              </RouterLink>
-            </span>
-          </template>
-
-        </el-menu-item>
-        <el-menu-item index="5">
-          <el-icon>
-            <Setting />
-          </el-icon>
-          <template #title>
-             <span>
-              <RouterLink to="/admin/setting">
-                Cài đặt
-              </RouterLink>
-            </span>
-          </template>
-        </el-menu-item>
+            </template>
+          </el-menu-item>
+        </template>
       </el-menu>
     </div>
   </div>
@@ -101,8 +39,21 @@
   import { Expand, Fold, Menu, Setting, Tickets, Monitor, Files } from '@element-plus/icons-vue'
 
   import { ref } from 'vue'
+  import { RoleType } from '@/enums/RoleType.ts'
+  import useAuthentication from '@/stores/Authentication.ts'
 
-  const isCollapse = ref<boolean>(false)
+  const isCollapse = ref<boolean>(false);
+
+  const listMenu = [
+    {id:1,title:"Trang quản lý",icon:Menu,link:"/admin/dashboard",role:[RoleType.TEACHER,RoleType.ADMIN]},
+    {id:2,title:"Quản lý danh muc",icon:Monitor,link:"/admin/category",role:[RoleType.TEACHER,RoleType.ADMIN]},
+    {id:3,title:"Quản lý khóa học",icon:Monitor,link:"/admin/courses",role:[RoleType.TEACHER,RoleType.ADMIN]},
+    {id:4,title:"Quản lý đơn hàng",icon:Tickets,link:"/admin/order",role:[RoleType.TEACHER,RoleType.ADMIN]},
+    {id:5,title:"Quản lý bai học",icon:Tickets,link:"/admin/lecture",role:[RoleType.TEACHER,RoleType.ADMIN]},
+    {id:6,title:"Cài đặt",icon:Setting,link:"/admin/setting",role:[RoleType.ADMIN]},
+  ];
+
+  const role = useAuthentication().userInfo.role;
 
   const handleOpen = (key: string, keyPath: string[]) => {
     console.log(key, keyPath)

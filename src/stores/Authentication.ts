@@ -4,6 +4,7 @@ import AuthenticationApi from '@/api/AuthenticationApi.ts'
 import { TokenType } from '@/enums/TokenType.ts'
 import AuthenticationSecurity from '@/security/AuthenticationSecurity.ts'
 
+
 const useAuthentication = defineStore('useAuthentication', () => {
 
     const userInfo = reactive({
