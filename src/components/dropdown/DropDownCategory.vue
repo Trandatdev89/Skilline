@@ -1,9 +1,7 @@
 <template>
   <div class="dropdownCustom">
     <el-dropdown popper-class="category-dropdown">
-      <span class="dropdownCustom__info">
-       <div style="font-size: 20px;font-weight: 500;color: #000000">{{ props.title }}</div>
-      </span>
+       <span style="font-size: 20px;font-weight: 500;color: #000000">{{ props.title }}</span>
       <template #dropdown>
         <el-dropdown-menu style="max-height: 200px!important;overflow-y: auto" @scroll.passive="handleScroll">
           <el-dropdown-item v-for="(item,index) in listItem" :key="index" style="width: 200px!important;">
@@ -38,27 +36,6 @@
 </script>
 
 <style scoped lang="scss">
-  .dropdownCustom {
-    &__avatar {
-      width: 50px;
-      height: 50px;
-      overflow: hidden;
-
-      img {
-        width: 100%;
-        border-radius: 50%;
-        height: 100%;
-        object-fit: cover;
-      }
-    }
-
-    &__info {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 15px;
-    }
-  }
 
   ::v-deep(.el-dropdown) {
     border: none !important;

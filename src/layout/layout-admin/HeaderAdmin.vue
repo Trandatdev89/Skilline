@@ -25,26 +25,26 @@
 
   const listLink = ref<any>([
     {
-      label: 'Trang quản lý',
+      title: 'Trang quản lý',
       url: '/admin/dashboard',
-      role:[RoleType.ADMIN,RoleType.TEACHER]
+      role: [RoleType.ADMIN, RoleType.TEACHER]
     },
     {
-      label: 'Khóa học đã mua',
+      title: 'Khóa học đã mua',
       url: '/bought',
-      role:RoleType.USER
+      role: RoleType.USER
     },
     {
-      label: 'Thông tin cá nhân',
+      title: 'Thông tin cá nhân',
       url: '/info',
-      role:[RoleType.USER,RoleType.ADMIN,RoleType.TEACHER]
+      role: [RoleType.USER, RoleType.ADMIN, RoleType.TEACHER]
     },
     {
-      label: 'Đăng xuất',
+      title: 'Đăng xuất',
       url: '/logout',
-      role:[RoleType.USER,RoleType.ADMIN,RoleType.TEACHER]
+      role: [RoleType.USER, RoleType.ADMIN, RoleType.TEACHER]
     }
-  ]);
+  ])
 
   const { userInfo } = storeToRefs(useAuthentication())
 

@@ -26,6 +26,7 @@ import ManageCategory from '@/views/ManageCategory.vue'
 import Bought from '@/views/Bought.vue'
 import Order from '@/views/Order.vue'
 import useAuthentication from '@/stores/Authentication.ts'
+import Info from '@/views/Info.vue'
 
 
 const router = createRouter({
@@ -90,6 +91,10 @@ const router = createRouter({
         {
           ...Pages.cart,
           component: Cart
+        },
+        {
+          ...Pages.info,
+          component: Info
         },
         {
           ...Pages.post,

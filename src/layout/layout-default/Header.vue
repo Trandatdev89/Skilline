@@ -35,10 +35,7 @@
               </el-icon>
             </el-badge>
           </RouterLink>
-          <div class="notification" @click="subscribeNotification">
-            <el-button :icon="Bell" style="font-size: 24px;border: none;background-color: transparent"/>
-          </div>
-          <div class="notification" @click="sendPushNoti">
+          <div class="notification">
             <el-button :icon="Bell" style="font-size: 24px;border: none;background-color: transparent"/>
           </div>
         </div>
@@ -185,7 +182,6 @@
   const getCategories = async () => {
     await loadMoreData(() => CategoryApi.getListCategoryPagination(request));
     listCategory.value = data.value;
-    console.log(listCategory.value);
   }
 
 
@@ -197,5 +193,14 @@
     text-decoration: none;
     font-size: 18px;
     font-weight: 500;
+  }
+
+  .header{
+    &__item{
+      a{
+        font-size: 20px;
+        color: #000000;
+      }
+    }
   }
 </style>

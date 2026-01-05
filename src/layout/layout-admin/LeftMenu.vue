@@ -1,12 +1,13 @@
 <template>
   <div class="leftMenu" :style="!isCollapse ? { 'box-shadow': '0 5px 7px rgba(0, 0, 0, 0.3)'} : {}">
     <div class="leftMenu__header">
+      <img
+        style="max-width: 100px"
+        v-if="!isCollapse"
+        :src="logo" alt="loading..." />
       <el-button @click="isCollapse=!isCollapse"
                  :icon="isCollapse ? Expand : Fold" style="font-size: 30px;
                  border: none;" />
-      <img
-          v-if="!isCollapse"
-          :src="logo" alt="loading..." />
     </div>
     <div class="leftMenu__main">
       <el-menu style="height: 100% !important;"
@@ -62,18 +63,20 @@
 
 <style lang="scss" scoped>
   .leftMenu {
-    width: 290px;
+    width: 100%;
     height: 100%;
     background: #fff;
     display: flex;
     flex-direction: column;
+    border-right:1px solid #dcdfe6;
 
     &__header {
       display: flex;
       align-items: center;
+      justify-content: space-between;
       gap: 30px;
-      padding: 3px;
-
+      padding-left: 20px;
+      padding-top: 15px;
       img {
         max-height: 70px;
         width: auto;
@@ -89,6 +92,10 @@
   a {
     text-decoration: none !important;
     color: #000;
+  }
+
+  :deep(.el-menu){
+    border: none !important;
   }
 
 </style>
