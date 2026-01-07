@@ -13,7 +13,6 @@
       <el-menu style="height: 100% !important;"
                :collapse="isCollapse"
                default-active="1"
-               @open="handleOpen"
       >
         <template  v-for="(menu) in listMenu">
           <el-menu-item :index="menu.id" v-if="menu.role.includes(<RoleType>role)">
@@ -56,9 +55,6 @@
 
   const role = useAuthentication().userInfo.role;
 
-  const handleOpen = (key: string, keyPath: string[]) => {
-    console.log(key, keyPath)
-  }
 </script>
 
 <style lang="scss" scoped>
