@@ -27,6 +27,7 @@ import Bought from '@/views/Bought.vue'
 import Order from '@/views/Order.vue'
 import useAuthentication from '@/stores/Authentication.ts'
 import Info from '@/views/Info.vue'
+import ManageQuiz from '@/views/admin/ManageQuiz.vue'
 
 
 const router = createRouter({
@@ -117,6 +118,10 @@ const router = createRouter({
         {
           ...Pages.manageCourses,
           component: ManageCourse
+        },
+        {
+          ...Pages.manageQuiz,
+          component: ManageQuiz
         },
         {
           ...Pages.manageLecture,

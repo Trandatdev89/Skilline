@@ -19,6 +19,9 @@ const Pages = {
     blog: {name:'blog',path:'/blog'},
     info:{name:'info',path:'/info'},
 
+    //Teacher:
+    manageQuiz:{name:'manage-quiz',path:'/admin/quiz'},
+
     //ADMIN:
     layoutAdmin:{name:'layout-admin',path:'/admin/dashboard'},
     dashboard:{name:'dashboard',path:'/admin/dashboard'},
