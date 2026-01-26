@@ -3,7 +3,6 @@
     <el-table v-if="data"
               :data="data"
               ref="tableRef"
-              v-loading.fullscreen.lock="loading"
               empty-text="Data Empty">
       <slot></slot>
     </el-table>
@@ -24,7 +23,6 @@
 
 
   import { onMounted, ref } from 'vue'
-  import { SortField } from '@/type/SortField.ts'
   import AlertService from '@/service/AlertService.ts'
 
   const data = ref<any>([])
@@ -56,10 +54,10 @@
     const request = {
       page: page.value,
       size: size.value,
-      sort: SortField.ASC,
+      sort: null,
       keyword: 'id'
     }
-    const res = await props?.getDataFunction(request)
+    const res = await props?.getDataFunction(request);
     if (res.code === 200) {
       data.value = res.data.list
       updatePageRequest(res.data)

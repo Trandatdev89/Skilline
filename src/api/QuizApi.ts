@@ -8,8 +8,11 @@ class QuizApi {
      return await httpAuth.post(`${apiPrefixQuiz}`,formData);
   }
 
-  async getQuizByLectureId(lectureId:string): Promise<ApiResponse<any>> {
-    return await httpAuth.get(`${apiPrefixQuiz}?lectureId=${lectureId}`);
+  async getQuizByLectureId(params:any): Promise<ApiResponse<any>> {
+    const config = {
+      params: params ? params : {}
+    };
+    return await httpAuth.get(`${apiPrefixQuiz}/lecture`,config);
   }
 
 }

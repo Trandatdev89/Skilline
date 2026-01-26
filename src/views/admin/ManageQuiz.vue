@@ -1,11 +1,127 @@
 <template>
-  <h1>Manage quiz</h1>
+  <div class="order">
+    <div class="order__add" style="display: flex;align-items: center;gap: 20px">
+      <el-input
+          v-model="selectArgumentOfQuiz.keyword"
+          style="width: 240px"
+          size="default"
+          placeholder="Please Input"
+          :suffix-icon="Search"
+      />
+      <el-select
+          v-model="selectArgumentOfQuiz.courseIdSelected"
+          filterable
+          allow-create
+          default-first-option
+          :reserve-keyword="false"
+          placeholder="Choose tags for your article"
+          style="width: 240px"
+      >
+        <el-option
+            v-for="item in listCourse"
+            :key="item.id"
+            :label="item.title"
+            :value="item.id"
+        />
+      </el-select>
+      <el-select
+          v-model="selectArgumentOfQuiz.lectureIdSelected"
+          filterable
+          allow-create
+          default-first-option
+          :reserve-keyword="false"
+          placeholder="Choose tags for your article"
+          style="width: 240px"
+      >
+        <el-option
+            v-for="item in listLectureOfCourse"
+            :key="item.id"
+            :label="item.title"
+            :value="item.id"
+        />
+      </el-select>
+      <el-button @click="handleFilter">Filter</el-button>
+    </div>
+    <div class="order__table">
+      <DataTable
+          ref="dataTable"
+          :get-data-function="handleFilter"
+      >
+        <el-table-column prop="id" label="ID" />
+        <el-table-column prop="title" label="Tiêu đề" />
+        <el-table-column prop="description" label="Mo ta" />
+        <el-table-column prop="timeLimit" label="Thời gian thi" />
+        <el-table-column prop="maxAttempt" label="Thi toi da" />
+        <el-table-column prop="status" label="Hanh dong">
+          <template #default="scope">
+            <el-button @click="updateCourse(scope.row)">
+              <el-icon>
+                <RefreshLeft />
+              </el-icon>
+            </el-button>
+          </template>
+        </el-table-column>
+      </DataTable>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
 
+  import DataTable from '@/components/datatable/DataTable.vue'
+  import { RefreshLeft, Search } from '@element-plus/icons-vue'
+  import useCourse from '@/composable/useCourse.ts'
+  import { reactive, watch, watchEffect } from 'vue'
+  import useLecture from '@/composable/useLecture..ts'
+  import useQuiz from '@/composable/useQuiz.ts'
+  import LectureApi from '@/api/LectureApi.ts'
+
+
+  const { listCourse,getListCourse } = useCourse();
+  const {listLectureOfCourse,getListLectureByCourseId} = useLecture();
+  const {listQuizOfLecture,getQuizByLectureId} = useQuiz();
+
+  const selectArgumentOfQuiz = reactive({
+    courseIdSelected:null,
+    keyword:"",
+    lectureIdSelected:null,
+  })
+
+  const updateCourse = (row:any)=>{
+
+  }
+
+  const getQuizzes = (param:any)=>{
+
+  }
+
+  const handleFilter = async ()=>{
+     if(selectArgumentOfQuiz.courseIdSelected===null
+         && selectArgumentOfQuiz.keyword === ""
+         && selectArgumentOfQuiz.lectureIdSelected===null){
+       return;
+     }
+    await getQuizByLectureId(selectArgumentOfQuiz.lectureIdSelected!,selectArgumentOfQuiz.courseIdSelected!);
+  }
+
+  watchEffect(async ()=>{
+    await getListCourse();
+    console.log(listQuizOfLecture.value);
+  });
+
+  watch(()=>selectArgumentOfQuiz.courseIdSelected,async (newValue)=>{
+    if(newValue){
+      await getListLectureByCourseId(newValue);
+    }
+  })
+
 </script>
 
 <style scoped lang="scss">
-
+   .order{
+     &__add{
+       margin-top: 50px;
+       margin-bottom: 20px;
+     }
+   }
 </style>

@@ -36,7 +36,7 @@
 <script lang="ts" setup>
 
   import logo from '@/assets/img/logo.png'
-  import { Expand, Fold, Menu, Setting, Tickets, Monitor, Files } from '@element-plus/icons-vue'
+  import { Expand, Fold, Menu, Setting, Tickets, Monitor, Files,QuestionFilled } from '@element-plus/icons-vue'
 
   import { ref } from 'vue'
   import { RoleType } from '@/enums/RoleType.ts'
@@ -50,7 +50,8 @@
     {id:3,title:"Quản lý khóa học",icon:Monitor,link:"/admin/courses",role:[RoleType.TEACHER,RoleType.ADMIN]},
     {id:4,title:"Quản lý đơn hàng",icon:Tickets,link:"/admin/order",role:[RoleType.TEACHER,RoleType.ADMIN]},
     {id:5,title:"Quản lý bai học",icon:Tickets,link:"/admin/lecture",role:[RoleType.TEACHER,RoleType.ADMIN]},
-    {id:6,title:"Cài đặt",icon:Setting,link:"/admin/setting",role:[RoleType.ADMIN]},
+    {id:6,title:"Quản lý quiz",icon:QuestionFilled,link:"/admin/quiz",role:[RoleType.ADMIN,RoleType.TEACHER]},
+    {id:7,title:"Cài đặt",icon:Setting,link:"/admin/setting",role:[RoleType.ADMIN]},
   ];
 
   const role = useAuthentication().userInfo.role;

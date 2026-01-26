@@ -165,9 +165,7 @@
       ...params,
       courseId: courseIdSelected.value
     }
-    const res = await LectureApi.getLecturesByCourseId(requestParams)
-    console.log(res);
-    return res;
+    return await LectureApi.getLecturesByCourseId(requestParams);
   }
 
   watch(courseIdSelected, async (newVal, oldVal) => {
