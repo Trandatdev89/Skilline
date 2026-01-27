@@ -59,7 +59,7 @@
                 text-btn-ok="Lưu"
                 :type-action="TypeAction.CREATE"
                 @create="handleCreateCourse">
-     <FormSaveCourse v-model="course" ref="formSaveCourse"/>
+    <FormSaveCourse v-model="course" ref="formSaveCourse" />
   </CreateDialog>
 </template>
 
@@ -68,34 +68,34 @@
   import DataTable from '@/components/datatable/DataTable.vue'
   import CreateDialog from '@/components/dialog/common/CreateDialog.vue'
   import LevelStudent from '@/enums/LevelStudent.ts'
-  import type { FormInstance } from 'element-plus'
   import CourseApi from '@/api/CourseApi.ts'
-  import AlertService from '@/service/AlertService.ts'
   import { RefreshLeft } from '@element-plus/icons-vue'
   import useCourse from '@/composable/useCourse.ts'
   import useCategory from '@/composable/useCategory.ts'
   import { TypeAction } from '@/enums/TypeAction.ts'
   import FormSaveCourse from '@/components/form/FormSaveCourse.vue'
+  import type { CourseReq } from '@/type/req/CourseReq.ts'
 
   const dataTable = ref()
   const createDialog = ref()
 
-  const createCourseForm = ref<FormInstance>()
   const loading = ref(false)
   const { listCourse, saveCourse } = useCourse()
   const { listCategory, getListCategory } = useCategory()
   const categoryIdSelected = ref<number>()
   const selectDropdown = ref<HTMLElement | null>(null)
-  const formSaveCourse = ref();
+  const formSaveCourse = ref()
 
-  const course = reactive({
+  const course = reactive<CourseReq>({
     id: null,
     title: '',
     desc: '',
     level: LevelStudent.BEGINNER,
     price: null,
     thumbnail: null,
-    categoryId: null
+    categoryId: null,
+    discount: null,
+    rate: 5
   })
 
   const updateCourse = (row: any) => {
@@ -113,30 +113,37 @@
     createDialog.value?.show()
   }
 
-  const handleCreateCourse = () => {
+  const handleCreateCourse = async () => {
+    console.log('abc')
+    const isValid = formSaveCourse.value?.validate()
+    if (!isValid) {
+      console.log('xyz')
+      return
+    }
     loading.value = true
-    createCourseForm.value?.validate(async (valid) => {
-      if (valid) {
-        const formData = new FormData()
 
-        formData.append('id', course.id ?? '')
-        formData.append('title', course.title)
-        formData.append('desc', course.desc)
-        formData.append('level', course.level)
-        formData.append('price', course.price ?? '')
-        formData.append('categoryId', course.categoryId ?? '')
+    const formData = new FormData()
 
-        if (course.thumbnail) {
-          formData.append('thumbnail', course.thumbnail)
-        }
+    if (course.id) {
+      formData.append('id', String(course.id))
+    }
+    formData.append('title', course.title)
+    formData.append('desc', course.desc)
+    formData.append('level', course.level)
+    formData.append('price', String(course.price))
+    formData.append('categoryId', String(course.categoryId))
+    formData.append('rate', String(course.rate))
+    formData.append('discount', String(course.discount))
 
-        const res = await CourseApi.saveCourse(formData)
-        listCourse.value.push(res.data)
-        AlertService.success('Thanh cong', 'Them khoa hoc thanh cong!')
-      } else {
-        AlertService.success('Thanh cong', 'Them khoa hoc that bai!')
-      }
-    })
+    if (course.thumbnail && course.thumbnail instanceof File) {
+      formData.append('thumbnail', course.thumbnail)
+    }
+    await saveCourse(formData);
+
+    formSaveCourse.value?.resetFields();
+    createDialog.value?.hide();
+    dataTable.value?.reload(dataTable.value?.request);
+    resetData();
   }
 
   const getListCourse = async (pageRequest: any) => {
@@ -165,6 +172,18 @@
         selectDropdown.value.removeEventListener('scroll', handleScroll)
       }
     }
+  }
+
+  const resetData = () => {
+    course.id = null
+    course.title = ''
+    course.desc = ''
+    course.level = LevelStudent.BEGINNER
+    course.price = null
+    course.thumbnail = null
+    course.categoryId = null
+    course.discount = null
+    course.rate = 5
   }
 
   onMounted(async () => {

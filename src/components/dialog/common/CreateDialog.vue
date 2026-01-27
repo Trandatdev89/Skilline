@@ -1,9 +1,10 @@
 <template>
   <el-dialog v-model="visibilityModel"
              :width="widthDialog"
-             style="position: relative"
+             top="4vh"
+             style="position: relative;overflow-y: auto"
              class="common-dialog"
-             :style="{ height: `${heightDialog}px` }"
+             :style="{ maxHeight: `${heightDialog}px`}"
   >
     <template #header>
          <span>
@@ -51,7 +52,7 @@
     heightDialog: {
       type: Number,
       required: false,
-      default: 700
+      default: 650
     }
   })
 
