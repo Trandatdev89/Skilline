@@ -40,7 +40,7 @@
             :value="item.id"
         />
       </el-select>
-      <el-button @click="handleFilter">Filter</el-button>
+      <!--      <el-button @click="handleFilter">Filter</el-button>-->
     </div>
     <div class="order__table">
       <DataTable
@@ -74,54 +74,55 @@
   import { reactive, watch, watchEffect } from 'vue'
   import useLecture from '@/composable/useLecture..ts'
   import useQuiz from '@/composable/useQuiz.ts'
-  import LectureApi from '@/api/LectureApi.ts'
+  import QuizApi from '@/api/QuizApi.ts'
 
 
-  const { listCourse,getListCourse } = useCourse();
-  const {listLectureOfCourse,getListLectureByCourseId} = useLecture();
-  const {listQuizOfLecture,getQuizByLectureId} = useQuiz();
+  const { listCourse, getListCourse } = useCourse()
+  const { listLectureOfCourse, getListLectureByCourseId } = useLecture()
+  const { listQuizOfLecture, getQuizByLectureId } = useQuiz()
 
   const selectArgumentOfQuiz = reactive({
-    courseIdSelected:null,
-    keyword:"",
-    lectureIdSelected:null,
+    courseIdSelected: 1,
+    keyword: '',
+    lectureIdSelected: null
   })
 
-  const updateCourse = (row:any)=>{
+  const updateCourse = (row: any) => {
 
   }
 
-  const getQuizzes = (param:any)=>{
+  const getQuizzes = (param: any) => {
 
   }
 
-  const handleFilter = async ()=>{
-     if(selectArgumentOfQuiz.courseIdSelected===null
-         && selectArgumentOfQuiz.keyword === ""
-         && selectArgumentOfQuiz.lectureIdSelected===null){
-       return;
-     }
-    await getQuizByLectureId(selectArgumentOfQuiz.lectureIdSelected!,selectArgumentOfQuiz.courseIdSelected!);
+  const handleFilter = async (params: any) => {
+    const requestParams = {
+      ...params,
+      courseId: selectArgumentOfQuiz.courseIdSelected,
+      keyword: selectArgumentOfQuiz.keyword,
+      lectureId: selectArgumentOfQuiz.lectureIdSelected
+    }
+    return await QuizApi.getQuizByLectureId(requestParams)
   }
 
-  watchEffect(async ()=>{
-    await getListCourse();
-    console.log(listQuizOfLecture.value);
-  });
+  watchEffect(async () => {
+    await getListCourse()
+    console.log(listQuizOfLecture.value)
+  })
 
-  watch(()=>selectArgumentOfQuiz.courseIdSelected,async (newValue)=>{
-    if(newValue){
-      await getListLectureByCourseId(newValue);
+  watch(() => selectArgumentOfQuiz.courseIdSelected, async (newValue) => {
+    if (newValue) {
+      await getListLectureByCourseId(newValue)
     }
   })
 
 </script>
 
 <style scoped lang="scss">
-   .order{
-     &__add{
-       margin-top: 50px;
-       margin-bottom: 20px;
-     }
-   }
+  .order {
+    &__add {
+      margin-top: 50px;
+      margin-bottom: 20px;
+    }
+  }
 </style>

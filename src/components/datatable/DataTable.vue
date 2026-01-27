@@ -3,15 +3,16 @@
     <el-table v-if="data"
               :data="data"
               ref="tableRef"
+              @sort-change="handleSortChange"
               empty-text="Data Empty">
       <slot></slot>
     </el-table>
 
     <div style="display: flex;align-items: center;justify-content: center;margin-top: 20px">
       <el-pagination
-          :page-size="size"
+          :page-size="request.size"
           :page-count="totalPage"
-          @change="reload"
+          @change="changePage"
           layout="prev, pager, next"
           :total="totalElement"
       />
@@ -22,15 +23,21 @@
 <script lang="ts" setup>
 
 
-  import { onMounted, ref } from 'vue'
+  import { onMounted, reactive, ref } from 'vue'
   import AlertService from '@/service/AlertService.ts'
+  import type { RequestParam } from '@/type/RequestParam.ts'
 
   const data = ref<any>([])
-  const page = ref<number>(1)
-  const size = ref<number>(10)
   const totalElement = ref<number>(0)
   const totalPage = ref<number>(0)
   const loading = ref<boolean>(false)
+  const emit = defineEmits(['reload']);
+  const request = reactive<RequestParam>({
+    page:1,
+    size:10,
+    keyword:'',
+    sort:null
+  })
 
   const props = defineProps({
     getDataFunction: {
@@ -50,13 +57,6 @@
 
   const getData = async () => {
     loading.value = true
-    page.value = 1
-    const request = {
-      page: page.value,
-      size: size.value,
-      sort: null,
-      keyword: 'id'
-    }
     const res = await props?.getDataFunction(request);
     if (res.code === 200) {
       data.value = res.data.list
@@ -67,12 +67,8 @@
     loading.value = false
   }
 
-  const reload = async (currentPage:number,pageSize:number) => {
+  const reload = async (request:RequestParam) => {
     loading.value = true
-    const request = {
-      page: currentPage,
-      size: pageSize
-    }
     const res = await props?.getDataFunction(request)
     if (res.code === 200) {
       data.value = res.data.list
@@ -85,24 +81,30 @@
     }
   }
 
+  const changePage = async (currentPage:number, prevPage:number)=>{
+      if(currentPage!==prevPage){
+        request.page = currentPage;
+        await reload(request);
+      }
+  }
+
   const updatePageRequest = (data: any) => {
-    page.value = data.page
-    size.value = data.size
+    request.page = data.page
+    request.size = data.size
     totalElement.value = data.totalElements
     totalPage.value = data.totalPages
   }
 
-  const handleChange = async (pageCurrent:number,pageSize:number)=>{
-    page.value = pageCurrent
-    size.value = pageSize
-    await getData();
+  const handleSortChange = (value:any)=>{
+    request.sort = `${value.prop}:${value.order === "ascending" ? 'ASC' : 'DESC'}`;
+    emit('reload',request);
   }
 
   onMounted(async () => {
     await getData()
   })
 
-  defineExpose({ getData })
+  defineExpose({ getData,reload,request})
 
 </script>
 

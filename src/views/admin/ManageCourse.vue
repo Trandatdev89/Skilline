@@ -1,6 +1,23 @@
 <template>
   <div class="order">
-    <div class="order__add">
+    <div class="order__add" style="display: flex;align-items: center;justify-content: space-between;margin: 25px 0">
+      <el-select
+          v-model="categoryIdSelected"
+          filterable
+          allow-create
+          default-first-option
+          :reserve-keyword="false"
+          @visible-change="handleVisibleChange"
+          placeholder="Choose tags for your article"
+          style="width: 240px"
+      >
+        <el-option
+            v-for="item in listCategory"
+            :key="item.id"
+            :label="item.name"
+            :value="item.id"
+        />
+      </el-select>
       <el-button @click="handleShowCreateCourse">
         Add Multiple Course
       </el-button>
@@ -27,7 +44,9 @@
         <el-table-column prop="status" label="Hanh dong">
           <template #default="scope">
             <el-button @click="updateCourse(scope.row)">
-              <el-icon><RefreshLeft /></el-icon>
+              <el-icon>
+                <RefreshLeft />
+              </el-icon>
             </el-button>
           </template>
         </el-table-column>
@@ -36,101 +55,38 @@
   </div>
   <CreateDialog ref="createDialog"
                 v-loading="loading"
-                @create-course="handleCreateCourse">
-    <el-form
-        ref="createCourseForm"
-        :model="course"
-        :rules="rules">
-      <el-form-item label-position="top" label="Tieu de khoa hoc" prop="title">
-        <el-input v-model="course.title" />
-      </el-form-item>
-      <el-form-item label-position="top" label="Cap do khoa hoc" prop="level">
-        <el-select v-model="course.level">
-          <el-option :value="LevelStudent.BEGINNER">
-            Beginner
-          </el-option>
-          <el-option :value="LevelStudent.ADVANCE">
-            Advance
-          </el-option>
-        </el-select>
-      </el-form-item>
-      <el-form-item label-position="top" label="Giá khóa hoc " prop="price">
-        <el-input-number v-model="course.price" />
-      </el-form-item>
-      <el-form-item label-position="top" label="Danh muc" prop="categoryId">
-        <el-select v-model="course.categoryId" multiple-limit="1">
-          <el-option v-for="item in listCate" :key="item.id" :value="item.id">
-            {{ item.name }}
-          </el-option>
-        </el-select>
-      </el-form-item>
-      <el-form-item label-position="top" label="Mo ta khoa hoc" prop="desc">
-        <el-input type="textarea" v-model="course.desc" />
-      </el-form-item>
-      <el-form-item label-position="top" label="Ảnh khóa học" prop="thumbnail">
-        <el-upload :limit="1" @change="handleProcessFile">
-          <el-button type="primary">Click to upload</el-button>
-        </el-upload>
-        <div style="position: relative;top: -5px;right: -5px" v-if="imgUpload">
-          <span style="position: absolute;color: red;font-size: 14px;cursor: pointer" @click="handleRemoveFile">X</span>
-          <img :src="imgUpload" alt="avatar..." style="width: 50px;height: 50px;object-fit: cover" />
-        </div>
-      </el-form-item>
-    </el-form>
+                :title="'Tạo mới khóa học'"
+                text-btn-ok="Lưu"
+                :type-action="TypeAction.CREATE"
+                @create="handleCreateCourse">
+     <FormSaveCourse v-model="course" ref="formSaveCourse"/>
   </CreateDialog>
 </template>
 
 <script setup lang="ts">
-  import { onMounted, reactive, ref, watchEffect } from 'vue'
+  import { nextTick, onMounted, reactive, ref, watchEffect } from 'vue'
   import DataTable from '@/components/datatable/DataTable.vue'
-  import CreateDialog from '@/components/dialog/CreateDialog.vue'
+  import CreateDialog from '@/components/dialog/common/CreateDialog.vue'
   import LevelStudent from '@/enums/LevelStudent.ts'
-  import type { FormInstance, FormRules } from 'element-plus'
+  import type { FormInstance } from 'element-plus'
   import CourseApi from '@/api/CourseApi.ts'
   import AlertService from '@/service/AlertService.ts'
-  import CategoryApi from '@/api/CategoryApi.ts'
-  import {RefreshLeft,Delete} from "@element-plus/icons-vue";
+  import { RefreshLeft } from '@element-plus/icons-vue'
+  import useCourse from '@/composable/useCourse.ts'
+  import useCategory from '@/composable/useCategory.ts'
+  import { TypeAction } from '@/enums/TypeAction.ts'
+  import FormSaveCourse from '@/components/form/FormSaveCourse.vue'
 
   const dataTable = ref()
-  const imgUpload = ref()
   const createDialog = ref()
-  const listCate = ref()
-  const listCourse = ref([{
-    id: null,
-    title: '',
-    desc: '',
-    level: LevelStudent.BEGINNER,
-    price: null,
-    thumbnail: null,
-    categoryId: null
-  }])
+
   const createCourseForm = ref<FormInstance>()
   const loading = ref(false)
-
-
-  const validationPrice = (rule: any, value: any, callback: any) => {
-    if (value < 0) {
-      callback(new Error('Giá giảm không được nhỏ hơn 0'))
-    } else {
-      callback()
-    }
-  }
-
-  const rules = reactive<FormRules>({
-    title: [
-      { required: true, message: 'Trường này băt buộc', trigger: 'blur' }
-    ],
-    level: [
-      { required: true, message: 'Trường này băt buộc', trigger: 'blur' }
-    ],
-    price: [
-      { required: true, message: 'Trường này băt buộc', trigger: 'blur' },
-      { validator: validationPrice, trigger: 'blur' }
-    ],
-    thumbnail: [
-      { required: true, message: 'Trường này băt buộc', trigger: 'blur' }
-    ]
-  })
+  const { listCourse, saveCourse } = useCourse()
+  const { listCategory, getListCategory } = useCategory()
+  const categoryIdSelected = ref<number>()
+  const selectDropdown = ref<HTMLElement | null>(null)
+  const formSaveCourse = ref();
 
   const course = reactive({
     id: null,
@@ -142,26 +98,14 @@
     categoryId: null
   })
 
-  const handleProcessFile = (file: any) => {
-    if (file.raw) {
-      course.thumbnail = file.raw
-      imgUpload.value = URL.createObjectURL(file.raw)
-    }
-  }
-
-  const handleRemoveFile = () => {
-    imgUpload.value = ''
-    course.thumbnail = null
-  }
-
-  const updateCourse = (row:any)=>{
-    course.id = row.id;
-    course.desc = row.desc;
-    course.price = row.price;
-    course.title = row.title;
-    course.level = row.level;
-    course.categoryId = row.categoryId;
-    course.thumbnail = row.thumbnail;
+  const updateCourse = (row: any) => {
+    course.id = row.id
+    course.desc = row.desc
+    course.price = row.price
+    course.title = row.title
+    course.level = row.level
+    course.categoryId = row.categoryId
+    course.thumbnail = row.thumbnail
     createDialog.value?.show()
   }
 
@@ -195,13 +139,32 @@
     })
   }
 
-  const getListCategory = async () => {
-    const res = await CategoryApi.getListCategory()
-    listCate.value = res.data
+  const getListCourse = async (pageRequest: any) => {
+    return await CourseApi.getListCourses(pageRequest)
   }
 
-  const getListCourse = async (pageRequest: any)=>{
-    return await CourseApi.getListCourses(pageRequest);
+  const handleScroll = async (e: Event) => {
+    const ev = e.target as HTMLElement
+    if (ev.scrollTop + ev.clientHeight >= ev.scrollHeight - 20) {
+      await getListCategory()
+    }
+  }
+
+  const handleVisibleChange = async (visible: boolean) => {
+    if (visible) {
+      await nextTick()
+      // Tìm dropdown element
+      const dropdown = document.querySelector('.el-select-dropdown__wrap')
+      if (dropdown) {
+        selectDropdown.value = dropdown as HTMLElement
+        dropdown.addEventListener('scroll', handleScroll, { passive: true })
+      }
+    } else {
+      // Remove listener khi đóng dropdown
+      if (selectDropdown.value) {
+        selectDropdown.value.removeEventListener('scroll', handleScroll)
+      }
+    }
   }
 
   onMounted(async () => {
@@ -209,7 +172,7 @@
   })
 
   watchEffect(() => {
-    console.log(listCourse.value)
+    console.log(listCategory.value)
   })
 
 </script>

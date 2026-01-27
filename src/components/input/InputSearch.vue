@@ -5,12 +5,27 @@
         <Search />
       </el-icon>
     </div>
-    <input placeholder="Type to search..."/>
+    <input placeholder="Type to search..." v-model="keyword" @keyup.enter="handleSearch"/>
   </div>
 </template>
 
 <script lang="ts" setup>
   import { Search } from '@element-plus/icons-vue'
+  import { useRoute, useRouter } from 'vue-router'
+  import { ref } from 'vue'
+
+  const router = useRouter()
+  const route = useRoute()
+  const keyword = ref('');
+
+  const handleSearch = ()=>{
+    router.push({
+      query:{
+        ...route.query,
+        keyword:keyword.value
+      }
+    })
+  }
 
 </script>
 
@@ -20,6 +35,8 @@
      border: 1px solid #333333;
      position: relative;
      border-radius: 5px;
+     width: 400px !important;
+
 
      &__icon{
        width: 20px;
@@ -29,12 +46,11 @@
        top: 8px;
      }
      input{
-       flex: 1;
        width: 100%;
        height: 100%;
        border: none;
        outline: none;
-       padding: 0px 30px;
+       padding-right:30px;
      }
    }
 </style>

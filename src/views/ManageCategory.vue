@@ -1,23 +1,30 @@
 <template>
-  <div class="order">
-    <div class="order__add">
+  <div class="category">
+    <div class="category__add" style="float: right;margin: 15px 0">
       <el-button @click="handleShowCreateCate">
         Add Multiple Course
       </el-button>
     </div>
-    <div class="order__table">
+    <div class="category__table">
       <DataTable
-        ref="dataTable"
-        :get-data-function="getListCategory"
+          ref="dataTable"
+          :get-data-function="getListCategory"
+          @reload="handleReloadData"
       >
-        <el-table-column prop="id" label="ID" />
-        <el-table-column prop="name" label="Tên danh mục"/>
-        <el-table-column prop="path" label="Ảnh">
+        <el-table-column prop="id" label="ID" sortable />
+        <el-table-column prop="name" label="Tên danh mục" sortable />
+        <el-table-column prop="isActive" label="Trạng thái">
           <template #default="scope">
-            <img :src="scope.row.urlThumbnail" alt="image..." style="width: 50px;height: 50px"/>
+            <el-tag type="success" v-if="scope.row.isActive">Tồn tại</el-tag>
+            <el-tag type="danger" v-else>Đã xóa</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="status" label="Hanh dong">
+        <el-table-column prop="path" label="Ảnh">
+          <template #default="scope">
+            <img :src="scope.row.urlThumbnail" alt="image..." style="width: 50px;height: 50px" />
+          </template>
+        </el-table-column>
+        <el-table-column prop="action" label="Hanh dong">
           <template #default="scope">
             <el-button @click="updateCategory(scope.row)">
               <el-icon>
@@ -31,113 +38,120 @@
   </div>
   <CreateDialog ref="createDialog"
                 v-loading="loading"
-                @create-course="handleCreateCate">
-    <el-form
-      ref="createCateForm"
-      :model="category"
-      :rules="rules">
-      <el-form-item label-position="top" label="Tieu de khoa hoc" prop="title">
-        <el-input v-model="category.title" />
-      </el-form-item>
-      <el-form-item label-position="top" label="Ảnh khóa học" prop="path">
-        <el-upload :limit="1" @change="handleProcessFile" :auto-upload="false">
-          <el-button type="primary">Click to upload</el-button>
-        </el-upload>
-        <div style="position: relative;top: -5px;right: -5px" v-if="imgUpload">
-          <span style="position: absolute;color: red;font-size: 14px;cursor: pointer" @click="handleRemoveFile">X</span>
-          <img :src="imgUpload" alt="avatar..." style="width: 50px;height: 50px;object-fit: cover" />
-        </div>
-      </el-form-item>
-    </el-form>
+                :title="'Tạo mới danh mục'"
+                :text-btn-ok="'Lưu'"
+                :width-dialog="500"
+                :heightDialog="400"
+                :type-action="TypeAction.CREATE"
+                @cancel="resetData"
+                @create="handleCreateCate">
+    <FormSaveCategory ref="createCateForm"
+                      v-model="category" />
   </CreateDialog>
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref, watchEffect } from 'vue'
-import DataTable from '@/components/datatable/DataTable.vue'
-import CreateDialog from '@/components/dialog/CreateDialog.vue'
-import LevelStudent from '@/enums/LevelStudent.ts'
-import type { FormInstance, FormRules } from 'element-plus'
-import CourseApi from '@/api/CourseApi.ts'
-import AlertService from '@/service/AlertService.ts'
-import CategoryApi from '@/api/CategoryApi.ts'
-import { RefreshLeft, Delete } from '@element-plus/icons-vue'
-import orderApi from '@/api/OrderApi.ts'
+  import { reactive, ref, watch } from 'vue'
+  import DataTable from '@/components/datatable/DataTable.vue'
+  import CreateDialog from '@/components/dialog/common/CreateDialog.vue'
+  import type { FormInstance } from 'element-plus'
+  import AlertService from '@/service/AlertService.ts'
+  import CategoryApi from '@/api/CategoryApi.ts'
+  import { RefreshLeft } from '@element-plus/icons-vue'
+  import { useRoute } from 'vue-router'
+  import type { RequestParam } from '@/type/RequestParam.ts'
+  import FormSaveCategory from '@/components/form/FormSaveCategory.vue'
+  import { TypeAction } from '@/enums/TypeAction.ts'
 
-const dataTable = ref()
-const imgUpload = ref()
-const createDialog = ref()
-const listCate = ref()
-const createCateForm = ref<FormInstance>()
-const loading = ref(false)
+  const route = useRoute()
+  const dataTable = ref()
+  const createDialog = ref()
+  const createCateForm = ref<FormInstance>()
+  const loading = ref(false)
+  const isEdit = ref(false)
 
 
-const rules = reactive<FormRules>({
-  title: [
-    { required: true, message: 'Trường này băt buộc', trigger: 'blur' }
-  ],
-  path: [
-    { required: true, message: 'Trường này băt buộc', trigger: 'blur' }
-  ]
-})
+  const category = reactive({
+    id: null,
+    title: '',
+    path: null as File | string | null,
+    imgPreview:null
+  })
 
-const category = reactive({
-  id: null,
-  title: '',
-  path:null
-})
-
-const handleProcessFile = (file: any) => {
-  if (file.raw) {
-    category.path = file.raw
-    imgUpload.value = URL.createObjectURL(file.raw)
+  const updateCategory = (row: any) => {
+    isEdit.value = true
+    category.id = row.id
+    category.title = row.name
+    category.path = row.urlThumbnail
+    createDialog.value?.show();
   }
-}
 
-const handleRemoveFile = () => {
-  imgUpload.value = ''
-  category.path = null
-}
+  function handleShowCreateCate() {
+    createDialog.value?.show()
+  }
 
-const updateCategory = (row: any) => {
-  category.id = row.id
-  category.title = row.name
-  category.path = row.path
-  createDialog.value?.show();
-}
+  const handleCreateCate = async () => {
+    const isValid = await createCateForm.value?.validate()
 
+    if (!isValid) {
+      return
+    }
 
+    loading.value = true
 
-function handleShowCreateCate() {
-  createDialog.value?.show()
-}
-
-const handleCreateCate = () => {
-  loading.value = true
-  createCateForm.value?.validate(async (valid) => {
-    if (valid) {
+    try {
       const formData = new FormData()
-
-      formData.append('id', category.id ?? '')
-      formData.append('name', category.title)
-
-      if (category.path) {
+      if (category.id) {
+        formData.append('id', category.id)
+      }
+      if (category.path && category.path instanceof File) {
         formData.append('path', category.path)
       }
+      formData.append('name', category.title)
 
-      const res = await CategoryApi.save(formData);
-      if(res.code === 200){
-        AlertService.success('Thanh cong', 'Them danh muc thanh cong!')
-      }else{
-        AlertService.error('That bai', 'Them danh muc that bai!')
+      const res = await CategoryApi.save(formData)
+
+      if (res.code !== 200) {
+        throw new Error(res.message)
       }
-    }
-  })
-}
 
-const getListCategory = async (params:any) => {
-  return await CategoryApi.getListCategoryPagination(params)
-}
+      resetData();
+      createCateForm.value?.resetFields()
+      dataTable.value?.reload(dataTable.value?.request);
+      createDialog.value?.hide()
+
+      AlertService.success('Success', isEdit.value ? 'Cập nhật danh mục thành công!' : 'Thêm danh mục thành công!')
+    } catch (error: any) {
+      AlertService.error('Error', error)
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const resetData = () => {
+    isEdit.value = false
+    category.id = null
+    category.path = null
+    category.title = ''
+  }
+
+  const getListCategory = async (params: any) => {
+    return await CategoryApi.getListCategoryPagination(params)
+  }
+
+  watch(() => route.query.keyword, (newKeyword) => {
+    if (newKeyword !== undefined) {
+      dataTable.value?.reload({
+        page: 1,
+        size: 10,
+        keyword: newKeyword as string
+      })
+    }
+  }, { immediate: true })
+
+  const handleReloadData = (request: RequestParam) => {
+    dataTable.value?.reload(request)
+  }
 
 </script>
 

@@ -21,6 +21,7 @@ const useLoadMore = () => {
 
       isLoading.value = true
       const response: ApiResponse<any> = await requestApi(request)
+      console.log("abc");
 
       if (response.code !== 200) {
         throw new Error(response.message)

@@ -11,10 +11,15 @@ class CategoryApi {
   }
 
   async getListCategoryPagination(params:any): Promise<ApiResponse<any>> {
-    const res :  ApiResponse<any> =  await httpApi.get(`${this.SUFFIX_URL}/pagination`, {
+    return await httpApi.get(`${this.SUFFIX_URL}/pagination`, {
       params: params || {}
     });
-    return res;
+  }
+
+  async getCategoryMySelf(params:any): Promise<ApiResponse<any>> {
+    return await httpAuth.get(`${this.SUFFIX_URL}/my-self`, {
+      params: params || {}
+    });
   }
 
   async save(data:any): Promise<ApiResponse<any>> {

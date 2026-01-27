@@ -76,7 +76,7 @@
 <script setup lang="ts">
   import { onMounted, reactive, ref, watch } from 'vue'
   import DataTable from '@/components/datatable/DataTable.vue'
-  import CreateDialog from '@/components/dialog/CreateDialog.vue'
+  import CreateDialog from '@/components/dialog/common/CreateDialog.vue'
   import type { FormInstance, FormRules } from 'element-plus'
   import CourseApi from '@/api/CourseApi.ts'
   import AlertService from '@/service/AlertService.ts'

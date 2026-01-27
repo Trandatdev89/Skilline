@@ -58,10 +58,6 @@
      gap: 20px;
      padding-top: 10px;
 
-     &__input{
-       flex: 1;
-     }
-
      &__action{
        width: auto;
        display: flex;

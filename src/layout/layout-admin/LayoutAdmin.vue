@@ -5,7 +5,7 @@
         <LeftMenu/>
       </el-aside>
 
-      <el-container>
+      <el-container style="padding: 0 15px">
         <el-header class="layoutAdmin__header">
           <HeaderAdmin/>
         </el-header>
@@ -30,7 +30,6 @@ import HeaderAdmin from '@/layout/layout-admin/HeaderAdmin.vue'
   &__container {
     min-height: 100vh !important;
     display: flex;
-    gap: 16px; /* khoảng cách bạn muốn */
   }
 
   &__header,
