@@ -6,7 +6,7 @@ export interface CourseReq {
   level: LevelStudent,
   desc: string,
   price: number | null,
-  discount:string | null,
+  discount:number | null,
   categoryId:number | null,
   thumbnail:File | null,
   rate:number

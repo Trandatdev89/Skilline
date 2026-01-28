@@ -1,6 +1,6 @@
 <template>
-  <div class="order">
-    <div class="order__add" style="display: flex;align-items: center;justify-content: space-between;margin: 25px 0">
+  <div class="course">
+    <div class="course__add" style="display: flex;align-items: center;justify-content: space-between;margin: 25px 0">
       <el-select
           v-model="categoryIdSelected"
           filterable
@@ -22,14 +22,14 @@
         Add Multiple Course
       </el-button>
     </div>
-    <div class="order__table">
+    <div class="course__table">
       <DataTable
           ref="dataTable"
           :get-data-function="getListCourse"
       >
         <el-table-column prop="id" label="ID" />
-        <el-table-column prop="title" label="Tieu de" />
-        <el-table-column prop="level" label="Cap do" />
+        <el-table-column prop="title" label="Tiêu đề" />
+        <el-table-column prop="level" label="Cấp độ" />
         <el-table-column prop="status" label="Trạng thái">
           <template #default="scope">
             <el-tag>
@@ -37,11 +37,13 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="price" label="Gia" />
-        <el-table-column prop="categoryName" label="Danh muc" />
+        <el-table-column prop="price" label="Giá" />
+        <el-table-column prop="discount" label="Giảm giá" />
+        <el-table-column prop="rate" label="Đánh giá" />
+        <el-table-column prop="categoryName" label="Danh mục" />
         <el-table-column prop="createAt" label="Ngày tạo" />
         <el-table-column prop="updateAt" label="Ngày cập nhập" />
-        <el-table-column prop="status" label="Hanh dong">
+        <el-table-column prop="action" label="Hành động">
           <template #default="scope">
             <el-button @click="updateCourse(scope.row)">
               <el-icon>
@@ -64,7 +66,7 @@
 </template>
 
 <script setup lang="ts">
-  import { nextTick, onMounted, reactive, ref, watchEffect } from 'vue'
+  import { nextTick, onMounted, reactive, ref, watch, watchEffect } from 'vue'
   import DataTable from '@/components/datatable/DataTable.vue'
   import CreateDialog from '@/components/dialog/common/CreateDialog.vue'
   import LevelStudent from '@/enums/LevelStudent.ts'
@@ -75,8 +77,10 @@
   import { TypeAction } from '@/enums/TypeAction.ts'
   import FormSaveCourse from '@/components/form/FormSaveCourse.vue'
   import type { CourseReq } from '@/type/req/CourseReq.ts'
+  import { useRoute } from 'vue-router'
 
-  const dataTable = ref()
+
+  const dataTable = ref<InstanceType<typeof DataTable> | null>();
   const createDialog = ref()
 
   const loading = ref(false)
@@ -85,6 +89,8 @@
   const categoryIdSelected = ref<number>()
   const selectDropdown = ref<HTMLElement | null>(null)
   const formSaveCourse = ref()
+  const route = useRoute()
+  const isEdit = ref(false)
 
   const course = reactive<CourseReq>({
     id: null,
@@ -99,13 +105,17 @@
   })
 
   const updateCourse = (row: any) => {
+    console.log(row)
+    isEdit.value = true
     course.id = row.id
-    course.desc = row.desc
+    course.desc = row.description
     course.price = row.price
     course.title = row.title
     course.level = row.level
     course.categoryId = row.categoryId
-    course.thumbnail = row.thumbnail
+    course.rate = row.rate
+    course.discount = Number(row.discount)
+    course.thumbnail = row.thumbnail_url
     createDialog.value?.show()
   }
 
@@ -114,36 +124,38 @@
   }
 
   const handleCreateCourse = async () => {
-    console.log('abc')
+
     const isValid = formSaveCourse.value?.validate()
     if (!isValid) {
-      console.log('xyz')
       return
     }
     loading.value = true
 
-    const formData = new FormData()
+    try{
+      const formData = new FormData()
 
-    if (course.id) {
-      formData.append('id', String(course.id))
+      if (course.id) {
+        formData.append('id', String(course.id))
+      }
+      formData.append('title', course.title)
+      formData.append('desc', course.desc)
+      formData.append('level', course.level)
+      formData.append('price', String(course.price))
+      formData.append('categoryId', String(course.categoryId))
+      formData.append('rate', String(course.rate))
+      formData.append('discount', String(course.discount))
+      if (course.thumbnail && course.thumbnail instanceof File) {
+        formData.append('thumbnail', course.thumbnail)
+      }
+
+      await saveCourse(formData)
+      formSaveCourse.value?.resetFields()
+      createDialog.value?.hide()
+      dataTable.value?.reload(dataTable.value?.request)
+      resetData()
+    }catch(e){
+      console.log(e);
     }
-    formData.append('title', course.title)
-    formData.append('desc', course.desc)
-    formData.append('level', course.level)
-    formData.append('price', String(course.price))
-    formData.append('categoryId', String(course.categoryId))
-    formData.append('rate', String(course.rate))
-    formData.append('discount', String(course.discount))
-
-    if (course.thumbnail && course.thumbnail instanceof File) {
-      formData.append('thumbnail', course.thumbnail)
-    }
-    await saveCourse(formData);
-
-    formSaveCourse.value?.resetFields();
-    createDialog.value?.hide();
-    dataTable.value?.reload(dataTable.value?.request);
-    resetData();
   }
 
   const getListCourse = async (pageRequest: any) => {
@@ -186,14 +198,28 @@
     course.rate = 5
   }
 
+  watch(()=>categoryIdSelected.value,(newValue,oldValue)=>{
+    if(newValue && newValue!==oldValue){
+      if (dataTable.value?.request) {
+        dataTable.value.request.categoryId = newValue;
+        dataTable.value.reload(dataTable.value.request);
+      }
+    }
+  })
+
+  watch(() => route.query.keyword, (newKeyword) => {
+    if (newKeyword !== undefined) {
+      dataTable.value?.reload({
+        page: 1,
+        size: 10,
+        keyword: newKeyword as string
+      })
+    }
+  }, { immediate: true })
+
   onMounted(async () => {
     await getListCategory()
   })
-
-  watchEffect(() => {
-    console.log(listCategory.value)
-  })
-
 </script>
 
 

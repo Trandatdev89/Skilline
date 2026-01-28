@@ -8,12 +8,8 @@
     </el-form-item>
     <el-form-item label-position="top" label="Cấp độ" prop="level">
       <el-select v-model="modelValue.level" >
-        <el-option :value="LevelStudent.BEGINNER">
-          Beginner
-        </el-option>
-        <el-option :value="LevelStudent.ADVANCE">
-          Advance
-        </el-option>
+        <el-option :value="LevelStudent.BEGINNER" :label="LevelStudent.BEGINNER" />
+        <el-option :value="LevelStudent.ADVANCE" :label="LevelStudent.ADVANCE"/>
       </el-select>
     </el-form-item>
     <el-form-item label-position="top" label="Giá" prop="price">
@@ -27,7 +23,7 @@
     </el-form-item>
     <el-form-item label-position="top" label="Danh mục" prop="categoryId">
       <el-select v-model="modelValue.categoryId" multiple-limit="1" @visible-change="handleVisibleChange">
-        <el-option v-for="item in listCategory" :key="item.id" :value="item.id">
+        <el-option v-for="item in listCategory" :key="item.id" :value="item.id" :label="item.name">
           {{ item.name }}
         </el-option>
       </el-select>
@@ -52,15 +48,18 @@
 <script setup lang="ts">
 
   import LevelStudent from '@/enums/LevelStudent.ts'
-  import { nextTick, onMounted, reactive, ref } from 'vue'
+  import { nextTick, onMounted, reactive, ref, watch, watchEffect } from 'vue'
   import type { FormInstance, FormRules } from 'element-plus'
   import useCategory from '@/composable/useCategory.ts'
   import type { CourseReq } from '@/type/req/CourseReq.ts'
+
 
   const imgUpload = ref()
   const { listCategory, getListCategory } = useCategory()
   const formRef = ref<FormInstance>();
   const selectDropdown = ref<HTMLElement | null>(null)
+  const modelValue = defineModel<CourseReq>({ required: true })
+
   const validationPrice = (rule: any, value: any, callback: any) => {
     if (value < 0) {
       callback(new Error('Giá giảm không được nhỏ hơn 0'))
@@ -68,7 +67,6 @@
       callback()
     }
   }
-
 
   const rules = reactive<FormRules>({
     title: [
@@ -80,18 +78,12 @@
     price: [
       { required: true, message: 'Trường này băt buộc', trigger: 'blur' },
       { validator: validationPrice, trigger: 'blur' }
-    ],
-    thumbnail: [
-      { required: true, message: 'Trường này băt buộc', trigger: 'blur' }
     ]
   })
-
-  const modelValue = defineModel<CourseReq>({ required: true })
 
   const handleProcessFile = (file: any) => {
     if (file.raw) {
       modelValue.value.thumbnail = file.raw
-      imgUpload.value = URL.createObjectURL(file.raw)
     }
   }
 
@@ -140,6 +132,18 @@
     formRef.value?.resetFields()
     handleRemoveFile()
   }
+
+  watch(() => modelValue.value.thumbnail, (newValue) => {
+    if (newValue) {
+      if (typeof newValue === 'string') {
+        imgUpload.value = newValue
+      } else if (newValue instanceof File) {
+        imgUpload.value = URL.createObjectURL(newValue)
+      }
+    }else {
+      imgUpload.value = ''
+    }
+  }, { immediate: true })
 
   onMounted(async ()=>{
     await getListCategory();

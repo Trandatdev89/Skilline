@@ -25,6 +25,7 @@
         keyword:keyword.value
       }
     })
+    keyword.value = "";
   }
 
 </script>

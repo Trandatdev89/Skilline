@@ -1,215 +1,82 @@
 <template>
   <div class="order">
-    <div class="order__add">
-      <el-button @click="handleShowCreateCourse">
-        Add Multiple Course
-      </el-button>
-    </div>
     <div class="order__table">
       <DataTable
           ref="dataTable"
           :get-data-function="getDataOrder"
       >
         <el-table-column prop="id" label="ID" />
-        <el-table-column prop="quantity" label="Số khóa học">
+        <el-table-column prop="fullname" label="Người tạo đơn" />
+        <el-table-column prop="phone" label="Số điện thoại" />
+        <el-table-column prop="email" label="Email" />
+        <el-table-column prop="address" label="Địa chỉ" />
+        <el-table-column prop="username" label="Tài khoản" />
+        <el-table-column prop="quantity" label="Số lượng" />
+        <el-table-column prop="totalPrice" label="Tổng tiền" />
+        <el-table-column prop="status" label="rạng thái thanh toán ">
           <template #default="scope">
             <el-tag>
               {{ scope.row.status }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="totalPrice" label="Tổng tiền" />
-        <el-table-column prop="userId" label="Người tạo đơn" />
         <el-table-column prop="createdAt" label="Ngày tạo đơn" />
-        <el-table-column prop="status" label="Hanh dong">
+        <el-table-column prop="action" label="Hành động">
           <template #default="scope">
-            <el-button @click="updateCourse(scope.row)">
-              <el-icon><RefreshLeft /></el-icon>
-            </el-button>
+            <el-tooltip
+                v-for="menu in MenuActionOrder"
+                :key="menu.key"
+                class="box-item"
+                effect="dark"
+                :content="menu.tooltip"
+                placement="top">
+              <el-button @click="handleShowDialog(scope.row, menu.type)">
+                <component :is="menu.icon" />
+              </el-button>
+            </el-tooltip>
           </template>
         </el-table-column>
       </DataTable>
     </div>
   </div>
+
   <CreateDialog ref="createDialog"
-                v-loading="loading"
-                @create-course="handleCreateCourse">
-    <el-form
-        ref="createCourseForm"
-        :model="course"
-        :rules="rules">
-      <el-form-item label-position="top" label="Tieu de khoa hoc" prop="title">
-        <el-input v-model="course.title" />
-      </el-form-item>
-      <el-form-item label-position="top" label="Cap do khoa hoc" prop="level">
-        <el-select v-model="course.level">
-          <el-option :value="LevelStudent.BEGINNER">
-            Beginner
-          </el-option>
-          <el-option :value="LevelStudent.ADVANCE">
-            Advance
-          </el-option>
-        </el-select>
-      </el-form-item>
-      <el-form-item label-position="top" label="Giá khóa hoc " prop="price">
-        <el-input-number v-model="course.price" />
-      </el-form-item>
-      <el-form-item label-position="top" label="Danh muc" prop="categoryId">
-        <el-select v-model="course.categoryId" multiple-limit="1">
-          <el-option v-for="item in listCate" :value="item.id">
-            {{ item.name }}
-          </el-option>
-        </el-select>
-      </el-form-item>
-      <el-form-item label-position="top" label="Mo ta khoa hoc" prop="desc">
-        <el-input type="textarea" v-model="course.desc" />
-      </el-form-item>
-      <el-form-item label-position="top" label="Ảnh khóa học" prop="thumbnail">
-        <el-upload :limit="1" @change="handleProcessFile">
-          <el-button type="primary">Click to upload</el-button>
-        </el-upload>
-        <div style="position: relative;top: -5px;right: -5px" v-if="imgUpload">
-          <span style="position: absolute;color: red;font-size: 14px;cursor: pointer" @click="handleRemoveFile">X</span>
-          <img :src="imgUpload" alt="avatar..." style="width: 50px;height: 50px;object-fit: cover" />
-        </div>
-      </el-form-item>
-    </el-form>
+                :title="'Xem thong tin'"
+                text-btn-ok="Lưu"
+                :type-action="TypeAction.READ">
+    <Component :is="componentDetail"/>
   </CreateDialog>
 </template>
 
 <script setup lang="ts">
-  import { onMounted, reactive, ref, watchEffect } from 'vue'
+  import { ref } from 'vue'
   import DataTable from '@/components/datatable/DataTable.vue'
-  import CreateDialog from '@/components/dialog/common/CreateDialog.vue'
-  import LevelStudent from '@/enums/LevelStudent.ts'
-  import type { FormInstance, FormRules } from 'element-plus'
-  import CourseApi from '@/api/CourseApi.ts'
-  import AlertService from '@/service/AlertService.ts'
-  import CategoryApi from '@/api/CategoryApi.ts'
-  import {RefreshLeft,Delete} from "@element-plus/icons-vue";
   import orderApi from '@/api/OrderApi.ts'
+  import { MenuActionOrder } from '@/common/MenuActionOrder.ts'
+  import { TypeAction } from '@/enums/TypeAction.ts'
+  import CreateDialog from '@/components/dialog/common/CreateDialog.vue'
+  import ManageCourse from '@/views/admin/ManageCourse.vue'
 
   const dataTable = ref()
-  const imgUpload = ref()
-  const createDialog = ref()
-  const listCate = ref()
-  const listCourse = ref([{
-    id: null,
-    title: '',
-    desc: '',
-    level: LevelStudent.BEGINNER,
-    price: null,
-    thumbnail: null,
-    categoryId: null
-  }])
-  const createCourseForm = ref<FormInstance>()
-  const loading = ref(false)
+  const componentDetail = ref();
+  const createDialog = ref<InstanceType<typeof CreateDialog> | null>(null)
 
-
-  const validationPrice = (rule: any, value: any, callback: any) => {
-    if (value < 0) {
-      callback(new Error('Giá giảm không được nhỏ hơn 0'))
-    } else {
-      callback()
-    }
-  }
-
-  const rules = reactive<FormRules>({
-    title: [
-      { required: true, message: 'Trường này băt buộc', trigger: 'blur' }
-    ],
-    level: [
-      { required: true, message: 'Trường này băt buộc', trigger: 'blur' }
-    ],
-    price: [
-      { required: true, message: 'Trường này băt buộc', trigger: 'blur' },
-      { validator: validationPrice, trigger: 'blur' }
-    ],
-    thumbnail: [
-      { required: true, message: 'Trường này băt buộc', trigger: 'blur' }
-    ]
-  })
-
-  const course = reactive({
-    id: null,
-    title: '',
-    desc: '',
-    level: LevelStudent.BEGINNER,
-    price: null,
-    thumbnail: null,
-    categoryId: null
-  })
-
-  const handleProcessFile = (file: any) => {
-    if (file.raw) {
-      course.thumbnail = file.raw
-      imgUpload.value = URL.createObjectURL(file.raw)
-    }
-  }
-
-  const handleRemoveFile = () => {
-    imgUpload.value = ''
-    course.thumbnail = null
-  }
-
-  const updateCourse = (row:any)=>{
-    course.id = row.id;
-    course.desc = row.desc;
-    course.price = row.price;
-    course.title = row.title;
-    course.level = row.level;
-    course.categoryId = row.categoryId;
-    course.thumbnail = row.thumbnail;
+  const handleShowDialog = (row: any,type:string) => {
+     switch (type){
+       case "detailOrder":
+         componentDetail.value = ManageCourse;
+         break;
+       case "paymentOrder":
+         componentDetail.value = null;
+         break;
+     }
     createDialog.value?.show()
-  }
-
-
-  function handleShowCreateCourse() {
-    createDialog.value?.show()
-  }
-
-  const handleCreateCourse = () => {
-    loading.value = true
-    createCourseForm.value?.validate(async (valid) => {
-      if (valid) {
-        const formData = new FormData()
-
-        formData.append('id', course.id ?? '')
-        formData.append('title', course.title)
-        formData.append('desc', course.desc)
-        formData.append('level', course.level)
-        formData.append('price', course.price ?? '')
-        formData.append('categoryId', course.categoryId ?? '')
-
-        if (course.thumbnail) {
-          formData.append('thumbnail', course.thumbnail)
-        }
-
-        const res = await CourseApi.saveCourse(formData)
-        listCourse.value.push(res.data)
-        AlertService.success('Thanh cong', 'Them khoa hoc thanh cong!')
-      } else {
-        AlertService.success('Thanh cong', 'Them khoa hoc that bai!')
-      }
-    })
-  }
-
-  const getListCategory = async () => {
-    const res = await CategoryApi.getListCategory()
-    listCate.value = res.data
   }
 
   const getDataOrder = async (pageRequest: any) => {
     return await orderApi.getOrders(pageRequest)
   }
 
-  onMounted(async () => {
-    await getListCategory()
-  })
-
-  watchEffect(() => {
-    console.log(listCourse.value)
-  })
 
 </script>
 

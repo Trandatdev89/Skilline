@@ -4,5 +4,6 @@ export interface RequestParam {
   keyword?: string,
   sort?: string | null,
   courseId?:number,
-  lectureId?:string
+  lectureId?:string,
+  categoryId?:number | null
 }
