@@ -2,9 +2,9 @@ name: DevSecOps Pipeline - Frontend
 
 on:
   push:
-    branches: [ main ]
+    branches: [ feature/xss ]
   pull_request:
-    branches: [ main ]
+    branches: [ feature/xss ]
 
 jobs:
   semgrep-scan:
