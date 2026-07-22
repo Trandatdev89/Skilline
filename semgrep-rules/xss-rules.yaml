@@ -3,9 +3,6 @@ rules:
   # ============================================================
   # RULE 1 (BACKEND - CRITICAL)
   # ReviewEntity: field comment lưu trực tiếp không có sanitize
-  # Phát hiện: @Column(columnDefinition = "TEXT") trên field String
-  # không có bất kỳ annotation validate/sanitize nào
-  # File liên quan: entity/ReviewEntity.java
   # ============================================================
   - id: stored-xss-unsanitized-entity-field
     patterns:
@@ -23,8 +20,7 @@ rules:
     message: >
       [CRITICAL - Stored XSS] Field '$FIELD' được lưu vào database mà không qua
       sanitize. Attacker có thể inject script độc hại vào field này.
-      Khuyến nghị: Dùng thư viện OWASP Java HTML Sanitizer hoặc Jsoup để sanitize
-      trước khi lưu, hoặc dùng Thymeleaf/encode output khi trả về.
+      Khuyến nghị: Dùng Jsoup.clean() hoặc OWASP Java HTML Sanitizer trước khi lưu.
     languages: [java]
     severity: ERROR
     metadata:
@@ -36,9 +32,6 @@ rules:
   # ============================================================
   # RULE 2 (BACKEND - CRITICAL)
   # ReviewServiceImpl: lưu comment từ request thẳng vào entity
-  # Phát hiện: pattern .comment(reviewReq.comment()) trong builder
-  # không có bước sanitize trung gian
-  # File liên quan: service/Impl/ReviewServiceImpl.java
   # ============================================================
   - id: stored-xss-direct-save-without-sanitize
     patterns:
@@ -69,8 +62,7 @@ rules:
     message: >
       [CRITICAL - Stored XSS] Dữ liệu từ request '$REQ.$METHOD()' được lưu thẳng
       vào database qua builder pattern mà không qua bước sanitize.
-      Khuyến nghị: Sanitize input trước khi gán vào builder,
-      ví dụ: .comment(Jsoup.clean(reviewReq.comment(), Safelist.none()))
+      Khuyến nghị: .comment(Jsoup.clean(reviewReq.comment(), Safelist.none()))
     languages: [java]
     severity: ERROR
     metadata:
@@ -81,9 +73,7 @@ rules:
 
   # ============================================================
   # RULE 3 (BACKEND - HIGH)
-  # Controller nhận @RequestBody và pass thẳng vào service
-  # không validate input trước
-  # File liên quan: controller/ReviewController.java
+  # Controller nhận @RequestBody không có @Valid/@Validated
   # ============================================================
   - id: stored-xss-controller-no-input-validation
     patterns:
@@ -103,8 +93,7 @@ rules:
     message: >
       [HIGH - Stored XSS] Controller nhận @RequestBody '$PARAM' và gọi service
       mà không có @Valid/@Validated để validate input.
-      Khuyến nghị: Thêm @Valid trước @RequestBody và định nghĩa
-      constraint annotations trên DTO (ví dụ @Pattern để chặn HTML tags).
+      Khuyến nghị: Thêm @Valid trước @RequestBody.
     languages: [java]
     severity: WARNING
     metadata:
@@ -115,23 +104,22 @@ rules:
 
   # ============================================================
   # RULE 4 (FRONTEND - CRITICAL)
-  # v-html với dữ liệu lấy từ object review (API response)
-  # Đây là điểm XSS thực sự kích hoạt trong trình duyệt
+  # Dùng generic mode để scan .vue files như plain text
+  # Phát hiện v-html="xxx.yyy" — dạng object.field (API data)
   # File liên quan: component chứa review-item__comment
   # ============================================================
   - id: stored-xss-v-html-api-data
-    patterns:
-      - pattern: <$TAG v-html="$OBJ.$FIELD" .../>
-      - pattern-not: <$TAG v-html="sanitize($OBJ.$FIELD)" .../>
-      - pattern-not: <$TAG v-html="DOMPurify.sanitize($OBJ.$FIELD)" .../>
+    pattern: 'v-html="$OBJ.$FIELD"'
     message: >
-      [CRITICAL - Stored XSS] Directive 'v-html' đang render trực tiếp
-      '$OBJ.$FIELD' từ API response mà không sanitize.
-      Bất kỳ script nào attacker lưu vào server sẽ được thực thi tại đây.
-      Khuyến nghị: Dùng DOMPurify.sanitize() trước khi bind v-html,
-      hoặc thay v-html bằng {{ }} để render dạng text thuần.
-    languages: [vue]
+      [CRITICAL - Stored XSS] Directive v-html đang render '$OBJ.$FIELD' từ API
+      response trực tiếp mà không sanitize. Script độc hại sẽ được thực thi
+      trong trình duyệt người dùng.
+      Khuyến nghị: Dùng DOMPurify.sanitize() hoặc thay bằng {{ }} để render text thuần.
+    languages: [generic]
     severity: ERROR
+    paths:
+      include:
+        - "*.vue"
     metadata:
       category: security
       cwe: CWE-79
@@ -140,22 +128,23 @@ rules:
 
   # ============================================================
   # RULE 5 (FRONTEND - HIGH)
-  # Bất kỳ v-html nào dùng với biến động (không phải hardcode)
-  # Bắt rộng hơn Rule 4, phát hiện các trường hợp tương tự
+  # Bắt rộng hơn: bất kỳ v-html nào với biến động
   # ============================================================
   - id: stored-xss-v-html-dynamic-content
     patterns:
-      - pattern: <$TAG v-html="$EXPR" .../>
-      - pattern-not: <$TAG v-html="'...'" .../>
-      - pattern-not: <$TAG v-html="sanitize($EXPR)" .../>
-      - pattern-not: <$TAG v-html="DOMPurify.sanitize($EXPR)" .../>
+      - pattern: 'v-html="$EXPR"'
+      - pattern-not: 'v-html="DOMPurify.sanitize($EXPR)"'
+      - pattern-not: 'v-html="sanitize($EXPR)"'
     message: >
-      [HIGH - Stored XSS] Directive 'v-html' đang render nội dung động '$EXPR'
-      mà không qua sanitize. Nếu '$EXPR' chứa dữ liệu từ user input hoặc API,
+      [HIGH - Stored XSS] Directive v-html đang render nội dung động '$EXPR'
+      mà không qua sanitize. Nếu '$EXPR' chứa dữ liệu từ user hoặc API,
       đây là điểm XSS tiềm năng.
-      Khuyến nghị: Luôn sanitize dữ liệu động trước khi dùng v-html.
-    languages: [vue]
+      Khuyến nghị: Luôn sanitize trước khi dùng v-html.
+    languages: [generic]
     severity: WARNING
+    paths:
+      include:
+        - "*.vue"
     metadata:
       category: security
       cwe: CWE-79
