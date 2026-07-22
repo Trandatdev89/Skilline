@@ -58,7 +58,7 @@
               </el-icon>
               Giới thiệu khóa học
             </h2>
-            <div class="description-text" v-html="formattedDescription"></div>
+            <div class="description-text">{{formattedDescription}}</div>
           </div>
 
           <div class="section-card">
@@ -251,8 +251,7 @@
 
   const formattedDescription = computed(() => {
     if (!course.value?.description) return ''
-    return course.value.description
-        .replace(/\n/g, '<br/>')
+    return course.value.description;
   })
 
   const formatPrice = (value: number): string =>
