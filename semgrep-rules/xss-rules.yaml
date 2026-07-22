@@ -1,0 +1,163 @@
+rules:
+
+  # ============================================================
+  # RULE 1 (BACKEND - CRITICAL)
+  # ReviewEntity: field comment lưu trực tiếp không có sanitize
+  # Phát hiện: @Column(columnDefinition = "TEXT") trên field String
+  # không có bất kỳ annotation validate/sanitize nào
+  # File liên quan: entity/ReviewEntity.java
+  # ============================================================
+  - id: stored-xss-unsanitized-entity-field
+    patterns:
+      - pattern: |
+          @Column(...)
+          private String $FIELD;
+      - pattern-not: |
+          @SafeHtml(...)
+          @Column(...)
+          private String $FIELD;
+      - pattern-not: |
+          @Pattern(...)
+          @Column(...)
+          private String $FIELD;
+    message: >
+      [CRITICAL - Stored XSS] Field '$FIELD' được lưu vào database mà không qua
+      sanitize. Attacker có thể inject script độc hại vào field này.
+      Khuyến nghị: Dùng thư viện OWASP Java HTML Sanitizer hoặc Jsoup để sanitize
+      trước khi lưu, hoặc dùng Thymeleaf/encode output khi trả về.
+    languages: [java]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: CWE-79
+      owasp: A03:2021 - Injection
+      confidence: HIGH
+
+  # ============================================================
+  # RULE 2 (BACKEND - CRITICAL)
+  # ReviewServiceImpl: lưu comment từ request thẳng vào entity
+  # Phát hiện: pattern .comment(reviewReq.comment()) trong builder
+  # không có bước sanitize trung gian
+  # File liên quan: service/Impl/ReviewServiceImpl.java
+  # ============================================================
+  - id: stored-xss-direct-save-without-sanitize
+    patterns:
+      - pattern: |
+          $REPO.save(
+            $ENTITY.builder()
+              .$FIELD($REQ.$METHOD())
+              .build()
+          );
+      - pattern-not: |
+          $REPO.save(
+            $ENTITY.builder()
+              .$FIELD(Jsoup.clean($REQ.$METHOD(), ...))
+              .build()
+          );
+      - pattern-not: |
+          $REPO.save(
+            $ENTITY.builder()
+              .$FIELD(Encode.forHtml($REQ.$METHOD()))
+              .build()
+          );
+      - pattern-not: |
+          $REPO.save(
+            $ENTITY.builder()
+              .$FIELD(sanitize($REQ.$METHOD()))
+              .build()
+          );
+    message: >
+      [CRITICAL - Stored XSS] Dữ liệu từ request '$REQ.$METHOD()' được lưu thẳng
+      vào database qua builder pattern mà không qua bước sanitize.
+      Khuyến nghị: Sanitize input trước khi gán vào builder,
+      ví dụ: .comment(Jsoup.clean(reviewReq.comment(), Safelist.none()))
+    languages: [java]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: CWE-79
+      owasp: A03:2021 - Injection
+      confidence: HIGH
+
+  # ============================================================
+  # RULE 3 (BACKEND - HIGH)
+  # Controller nhận @RequestBody và pass thẳng vào service
+  # không validate input trước
+  # File liên quan: controller/ReviewController.java
+  # ============================================================
+  - id: stored-xss-controller-no-input-validation
+    patterns:
+      - pattern: |
+          public $RET $METHOD(@RequestBody $TYPE $PARAM) {
+            $SERVICE.$CALL($PARAM);
+            ...
+          }
+      - pattern-not: |
+          public $RET $METHOD(@Valid @RequestBody $TYPE $PARAM) {
+            ...
+          }
+      - pattern-not: |
+          public $RET $METHOD(@Validated @RequestBody $TYPE $PARAM) {
+            ...
+          }
+    message: >
+      [HIGH - Stored XSS] Controller nhận @RequestBody '$PARAM' và gọi service
+      mà không có @Valid/@Validated để validate input.
+      Khuyến nghị: Thêm @Valid trước @RequestBody và định nghĩa
+      constraint annotations trên DTO (ví dụ @Pattern để chặn HTML tags).
+    languages: [java]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe: CWE-79
+      owasp: A03:2021 - Injection
+      confidence: MEDIUM
+
+  # ============================================================
+  # RULE 4 (FRONTEND - CRITICAL)
+  # v-html với dữ liệu lấy từ object review (API response)
+  # Đây là điểm XSS thực sự kích hoạt trong trình duyệt
+  # File liên quan: component chứa review-item__comment
+  # ============================================================
+  - id: stored-xss-v-html-api-data
+    patterns:
+      - pattern: <$TAG v-html="$OBJ.$FIELD" .../>
+      - pattern-not: <$TAG v-html="sanitize($OBJ.$FIELD)" .../>
+      - pattern-not: <$TAG v-html="DOMPurify.sanitize($OBJ.$FIELD)" .../>
+    message: >
+      [CRITICAL - Stored XSS] Directive 'v-html' đang render trực tiếp
+      '$OBJ.$FIELD' từ API response mà không sanitize.
+      Bất kỳ script nào attacker lưu vào server sẽ được thực thi tại đây.
+      Khuyến nghị: Dùng DOMPurify.sanitize() trước khi bind v-html,
+      hoặc thay v-html bằng {{ }} để render dạng text thuần.
+    languages: [vue]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: CWE-79
+      owasp: A03:2021 - Injection
+      confidence: HIGH
+
+  # ============================================================
+  # RULE 5 (FRONTEND - HIGH)
+  # Bất kỳ v-html nào dùng với biến động (không phải hardcode)
+  # Bắt rộng hơn Rule 4, phát hiện các trường hợp tương tự
+  # ============================================================
+  - id: stored-xss-v-html-dynamic-content
+    patterns:
+      - pattern: <$TAG v-html="$EXPR" .../>
+      - pattern-not: <$TAG v-html="'...'" .../>
+      - pattern-not: <$TAG v-html="sanitize($EXPR)" .../>
+      - pattern-not: <$TAG v-html="DOMPurify.sanitize($EXPR)" .../>
+    message: >
+      [HIGH - Stored XSS] Directive 'v-html' đang render nội dung động '$EXPR'
+      mà không qua sanitize. Nếu '$EXPR' chứa dữ liệu từ user input hoặc API,
+      đây là điểm XSS tiềm năng.
+      Khuyến nghị: Luôn sanitize dữ liệu động trước khi dùng v-html.
+    languages: [vue]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe: CWE-79
+      owasp: A03:2021 - Injection
+      confidence: MEDIUM
